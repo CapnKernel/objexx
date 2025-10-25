@@ -4,7 +4,7 @@ from .models import Item, ExternalBarcode, ItemHistory
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ['name', 'parent', 'deleted', 'created_at']
+    list_display = ['id', 'barcode_string', 'name', 'parent', 'deleted', 'created_at']
     list_filter = ['deleted', 'created_at']
     search_fields = ['name', 'description']
     readonly_fields = ['created_at', 'updated_at']
