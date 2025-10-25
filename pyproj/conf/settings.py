@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # See end of this file for debug tools
     # Apps in this project
     'authuser',
+    'app',
 ]
 
 MIDDLEWARE = [
