@@ -1,5 +1,6 @@
 {% extends "app/base.html" %}
 {% load static %}
+{% load partials %}
 
 {% block title %}Inventory Dashboard{% endblock title %}
 
@@ -25,15 +26,11 @@
             <div class="col-12">
                 <h2>Inventory Dashboard</h2>
                 <p class="lead">Welcome to your inventory management system.</p>
-
                 <div class="row mt-4">
-                    <div class="col-md-4">
-                        <div class="card text-center inventory-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Items</h5>
-                                <p class="card-text display-6">0</p>
-                            </div>
-                        </div>
+                    <div class="col-md-4"
+                        hx-get="{% url 'app:total_items_partial' %}"
+                        hx-trigger="load">
+                        {% partial total-items-card %}
                     </div>
                     <div class="col-md-4">
                         <div class="card text-center inventory-card">
@@ -96,3 +93,12 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 {% endblock extra_js %}
+
+{% partialdef total-items-card %}
+    <div class="card text-center inventory-card">
+        <div class="card-body">
+            <h5 class="card-title">Total Items</h5>
+            <p class="card-text display-6">{{ total_items }}</p>
+        </div>
+    </div>
+{% endpartialdef %}
