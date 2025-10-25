@@ -1,0 +1,98 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}Inventory Dashboard{% endblock title %}
+
+{% block navbar %}
+<ul class="navbar-nav me-auto">
+    <li class="nav-item">
+        <a class="nav-link active" href="{% url 'app:inventory_dashboard' %}">Dashboard</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Items</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Scan Barcode</a>
+    </li>
+</ul>
+{% endblock navbar %}
+
+{% block body %}
+<div x-data="{ activeTab: 'dashboard' }">
+    <!-- Dashboard Tab -->
+    <div x-show="activeTab === 'dashboard'" x-transition>
+        <div class="row">
+            <div class="col-12">
+                <h2>Inventory Dashboard</h2>
+                <p class="lead">Welcome to your inventory management system.</p>
+
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card text-center inventory-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Items</h5>
+                                <p class="card-text display-6">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center inventory-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Containers</h5>
+                                <p class="card-text display-6">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center inventory-card">
+                            <div class="card-body">
+                                <h5 class="card-title">Recent Activity</h5>
+                                <p class="card-text display-6">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Tab -->
+    <div x-show="activeTab === 'items'" x-transition x-cloak>
+        <div class="row">
+            <div class="col-12">
+                <h2>Item Management</h2>
+                <p>Item management functionality will be implemented here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan Tab -->
+    <div x-show="activeTab === 'scan'" x-transition x-cloak>
+        <div class="row">
+            <div class="col-12">
+                <h2>Barcode Scanner</h2>
+                <div class="card barcode-scanner">
+                    <div class="card-body">
+                        <h5 class="card-title">Scan Barcode</h5>
+                        <p class="card-text">Barcode scanning functionality will be implemented here.</p>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Enter barcode or use scanner..."
+                                   x-ref="barcodeInput">
+                            <button class="btn btn-primary" type="button">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}
+
+{% block extra_js %}
+<script>
+// Alpine.js initialization and any dashboard-specific JavaScript
+document.addEventListener('alpine:init', () => {
+    // Dashboard-specific Alpine.js components can be added here
+});
+</script>
+{% endblock extra_js %}

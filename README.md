@@ -23,4 +23,6 @@ vi conf/local_settings.py  # Remove top or bottom half depending on DEPLOY_TYPE
 
 vi pyproj/settings.py  # Add 'app' to INSTALLED_APPS
 
+Set interpreter in VSCode to env/bin/python
+
 ```

@@ -1,0 +1,31 @@
+/* Alpine.js x-cloak support */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Custom styles for inventory management */
+.inventory-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.inventory-card:hover {
+    transform: translateY(-2px);
+}
+
+.barcode-scanner {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-nav .nav-item {
+        margin-bottom: 0.5rem;
+    }
+}

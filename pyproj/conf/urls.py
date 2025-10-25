@@ -24,10 +24,10 @@ from django.views.static import serve
 
 
 urlpatterns = [
+    path('', include('app.urls')),
     path('office/', admin.site.urls),
     path('accounts/', include('authuser.urls')),
     path('favicon.ico', RedirectView.as_view(url=static('favicon.ico'), permanent=True)),
-    # path('your_app/', include('your_app.urls')),
     # If we're running behind a web server, we won't see media requests, so this will do nothing.
     re_path(
         r'^media/(?P<path>.*)$',

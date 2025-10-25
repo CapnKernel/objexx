@@ -1,3 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def inventory_dashboard(request):
+    """Main inventory management dashboard"""
+    return render(request, 'app/dash.html')
