@@ -47,7 +47,7 @@
         <!-- Navigation -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="{% url 'app:inventory_dashboard' %}">Inventory Manager</a>
+                <a class="navbar-brand" href="{% url 'app:dash' %}">Inventory Manager</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -55,7 +55,7 @@
                     {% block navbar %}
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'app:inventory_dashboard' %}">Dashboard</a>
+                            <a class="nav-link" href="{% url 'app:dash' %}">Dashboard</a>
                         </li>
                     </ul>
                     {% endblock navbar %}
