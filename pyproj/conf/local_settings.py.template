@@ -1,0 +1,73 @@
+from pathlib import Path
+import dj_database_url
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SITE_ID = 1
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = ['*']
+
+# Needed for Django Debug Toolbar
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
+API_ALLOW_IPV4_SUBNET = '127.0.0.0/24'
+API_ALLOW_IPV6_SUBNET = None
+
+# https://utils.brntn.me/database-url/
+DATABASES = {
+    'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
+}
+
+STATIC_ROOT = None
+MEDIA_ROOT = BASE_DIR / 'media/'
+
+ADMINS = [("Mitch Davis", "mjd@afork.com")]
+
+DBBACKUP_HOSTNAME = 'local'
+DBBACKUP_FILENAME_TEMPLATE = '{servername}-app-{datetime}.sql'
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR / 'backups'}
+DBBACKUP_CLEANUP_KEEP = 2
+
+# -- Above here is local sqlite.  Below, deployed mysql
+
+from pathlib import Path
+import dj_database_url
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SITE_ID = 1
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+ALLOWED_HOSTS = ['192.168.100.154', 'example.org']
+
+# Needed for Django Debug Toolbar
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
+API_ALLOW_IPV4_SUBNET = '1.2.3.4/32'
+API_ALLOW_IPV6_SUBNET = None
+
+# https://utils.brntn.me/database-url/
+DATABASES = {
+    'default': dj_database_url.config(default=f'mysql://dbuser:ridiculous-password@:/register'),
+}
+
+STATIC_ROOT = '/var/www/register-static/'
+MEDIA_ROOT = '/var/www/register-media/'
+
+ADMINS = [("Mitch Davis", "mjd@afork.com")]
+
+DBBACKUP_HOSTNAME = 'website.example.com'
+DBBACKUP_FILENAME_TEMPLATE = '{servername}-app-{datetime}.sql'
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/var/www/myapp/'}
+DBBACKUP_CLEANUP_KEEP = 10
