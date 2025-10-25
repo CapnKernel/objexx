@@ -1,0 +1,32 @@
+{% extends "app/base.html" %}
+
+{% load static %}
+{% load navtag %}
+
+{% block title %}Create New Item{% endblock title %}
+
+{% block nav %}
+{% nav "new" %}
+{{ block.super }}
+{% endblock nav %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Create New Item</h2>
+            </div>
+            <div class="card-body">
+                <p>This page will contain a form to create a new item.</p>
+                {% if barcode %}
+                    <div class="alert alert-info">
+                        <strong>Scanned Barcode:</strong> <code>{{ barcode }}</code>
+                    </div>
+                {% endif %}
+                <p>Form functionality will be implemented here.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}
