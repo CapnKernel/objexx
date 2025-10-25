@@ -86,7 +86,7 @@ class Item(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
 
-        return reverse('item_detail', kwargs={'id': self.pk})
+        return reverse('app:item_detail', kwargs={'pk': self.pk})
 
     def soft_delete(self, reason=""):
         """Soft delete this item and all its children recursively"""
