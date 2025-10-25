@@ -10,4 +10,5 @@ urlpatterns = [
     path('item/<int:pk>/', views.item_detail, name='item_detail'),
     path('item/new/', views.new_item, name='new_item'),
     path('scan/', views.scan_redirect, name='scan_redirect'),
+    path('import/', views.import_items, name='import_items'),
 ]

@@ -103,6 +103,49 @@
                 integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
                 crossorigin="anonymous"></script>
 
+        <!-- Toast container -->
+        <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11"></div>
+
+        <script>
+            // Toast functionality
+            function showToast(message, type = 'success') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+
+                const toastHtml = `
+                    <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+                toast.show();
+
+                // Remove toast from DOM after it's hidden
+                toastElement.addEventListener('hidden.bs.toast', function () {
+                    this.remove();
+                });
+            }
+
+            // Check for URL parameters to show toasts
+            document.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const message = urlParams.get('message');
+                const messageType = urlParams.get('message_type') || 'success';
+
+                if (message) {
+                    showToast(message, messageType);
+                }
+            });
+        </script>
+
         {% block extra_js %}
         {% endblock extra_js %}
     </body>
