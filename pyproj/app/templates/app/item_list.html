@@ -1,21 +1,13 @@
 {% extends "app/base.html" %}
 {% load static %}
+{% load navtag %}
 
 {% block title %}All Items - Inventory{% endblock title %}
 
-{% block navbar %}
-<ul class="navbar-nav me-auto">
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'app:dash' %}">Dashboard</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link active" href="{% url 'app:item_list' %}">Items</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">Scan Barcode</a>
-    </li>
-</ul>
-{% endblock navbar %}
+{% block nav %}
+{% nav "items" %}
+{{ block.super }}
+{% endblock nav %}
 
 {% block body %}
 <div class="row">

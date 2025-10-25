@@ -1,4 +1,5 @@
 {% load static %}
+{% load navtag %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -52,13 +53,20 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    {% block navbar %}
+                    {% block nav %}
+                    {% nav text ' active' %}
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'app:dash' %}">Dashboard</a>
+                            <a class="nav-link{{ nav.dash }}" href='{% url "app:dash" %}'>Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{{ nav.items }}" href='{% url "app:item_list" %}'>Items</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{{ nav.scan }}" href="#">Scan Barcode</a>
                         </li>
                     </ul>
-                    {% endblock navbar %}
+                    {% endblock nav %}
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
                             <li class="nav-item">
