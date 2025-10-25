@@ -1,0 +1,199 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}{{ item.name }} - Item Details{% endblock title %}
+
+{% block navbar %}
+<ul class="navbar-nav me-auto">
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'app:inventory_dashboard' %}">Dashboard</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Items</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Scan Barcode</a>
+    </li>
+</ul>
+{% endblock navbar %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'app:item_list' %}">Items</a></li>
+                <li class="breadcrumb-item active">{{ item.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">{{ item.name }}</h2>
+                {% if item.deleted %}
+                    <span class="badge bg-danger">Deleted</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Basic Information</h4>
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th>ID</th>
+                                    <td>{{ item.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ item.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Description</th>
+                                    <td>{{ item.description|default:"No description" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Location Path</th>
+                                    <td>{{ item.path }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Parent Container</th>
+                                    <td>
+                                        {% if item.parent %}
+                                            <a href="{% url 'app:item_detail' pk=item.parent.id %}">{{ item.parent.name }}</a>
+                                        {% else %}
+                                            <em>Root item</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Is Container</th>
+                                    <td>
+                                        {% if item.is_container %}
+                                            <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h4>Status & Metadata</h4>
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <th>Barcode</th>
+                                    <td><code>{{ item.barcode_string }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Barcode Printed</th>
+                                    <td>{{ item.barcode_printed_at|default:"Not printed" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Contents Printed</th>
+                                    <td>{{ item.contents_printed_at|default:"Not printed" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td>{{ item.created_at }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated</th>
+                                    <td>{{ item.updated_at }}</td>
+                                </tr>
+                                {% if item.deleted %}
+                                <tr>
+                                    <th>Deleted At</th>
+                                    <td>{{ item.deleted_at }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Deletion Reason</th>
+                                    <td>{{ item.deletion_reason|default:"No reason provided" }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% if item.external_barcodes.exists %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>External Barcodes</h4>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Type</th>
+                                    <th>Notes</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for barcode in item.external_barcodes.all %}
+                                <tr>
+                                    <td><code>{{ barcode.code }}</code></td>
+                                    <td><span class="badge bg-info">{{ barcode.barcode_type }}</span></td>
+                                    <td>{{ barcode.notes|default:"-" }}</td>
+                                    <td>{{ barcode.created_at }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if item.is_container %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Contents</h4>
+                        {% if item.children.exists %}
+                        <div class="list-group">
+                            {% for child in item.children.all %}
+                                {% if not child.deleted %}
+                                <a href="{% url 'app:item_detail' pk=child.id %}" class="list-group-item list-group-item-action">
+                                    {{ child.name }}
+                                    {% if child.is_container %}
+                                        <span class="badge bg-primary float-end">Container</span>
+                                    {% endif %}
+                                </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">This container is empty.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if item.history_entries.exists %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Recent Activity</h4>
+                        <div class="list-group">
+                            {% for entry in item.history_entries.all|slice:":5" %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ entry.get_action_display }}</h6>
+                                    <small>{{ entry.timestamp }}</small>
+                                </div>
+                                <p class="mb-1">{{ entry.description }}</p>
+                                {% if entry.user %}
+                                    <small>By {{ entry.user.preferred_name|default:entry.user.email }}</small>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}
