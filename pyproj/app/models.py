@@ -50,7 +50,7 @@ class Item(models.Model):
 
     def __str__(self):
         status = " [DELETED]" if self.deleted else ""
-        return f"{self.name} ({self.internal_barcode}){status}"
+        return f"{self.name} ({self.barcode_string}){status}"
 
     @property
     def is_container(self):
@@ -86,7 +86,7 @@ class Item(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
 
-        return reverse('item_detail', kwargs={'internal_barcode': self.internal_barcode})
+        return reverse('item_detail', kwargs={'id': self.pk})
 
     def soft_delete(self, reason=""):
         """Soft delete this item and all its children recursively"""
