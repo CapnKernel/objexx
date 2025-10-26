@@ -65,6 +65,9 @@
                         <li class="nav-item">
                             <a class="nav-link{{ nav.new }}" href="#">New item</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                        </li>
                     </ul>
                     {% endblock nav %}
                     <form class="d-flex me-3" method="get" action="{% url 'app:scan_redirect' %}">
