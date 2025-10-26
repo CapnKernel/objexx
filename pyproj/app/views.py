@@ -1,6 +1,7 @@
 import csv
-import re
+from datetime import datetime
 from io import StringIO
+import re
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -35,22 +36,29 @@ def scan_redirect(request):
     if not code:
         raise Http404("No barcode provided")
 
+    item = None
     # Try to find item by internal barcode using regex
     match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", code)
     if match:
         try:
             item = Item.objects.get(id=match.group(1))
-            # return redirect('app:item_detail', pk=item.id)
-            return redirect(item)
         except Item.DoesNotExist:
             pass
 
-    # Try to find item by external barcode
-    try:
-        external_barcode = ExternalBarcode.objects.get(code=code)
-        return redirect(external_barcode.item)
-    except ExternalBarcode.DoesNotExist:
-        pass
+    if not item:
+        # If it wasn't the internal barcode of an item, try it as an external.
+        try:
+            external_barcode = ExternalBarcode.objects.get(code=code)
+            item = external_barcode.item
+        except ExternalBarcode.DoesNotExist:
+            pass
+
+    if item:
+        # If either way we found an item, redirect to its detail page
+        # Update last_scanned_at timestamp with UTC datetime
+        item.last_scanned_at = datetime.utcnow()
+        item.save()
+        return redirect(item)
 
     # If no item found (could be new!), redirect to new item page
     url = reverse('app:new_item', query={'barcode': code})

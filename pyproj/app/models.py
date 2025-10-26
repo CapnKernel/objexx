@@ -32,6 +32,9 @@ class Item(models.Model):
         null=True, blank=True, help_text="When the container's contents list was last printed (containers only)"
     )
 
+    # Scanning Tracking
+    last_scanned_at = models.DateTimeField(null=True, blank=True, help_text="When this item was last scanned")
+
     # Soft Deletion
     deleted = models.BooleanField(default=False, help_text="Whether this item has been deleted")
     deleted_at = models.DateTimeField(null=True, blank=True, help_text="When this item was deleted")
