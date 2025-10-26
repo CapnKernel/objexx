@@ -23,6 +23,11 @@
     font-size: 1.5rem;
 }
 
+/* Toast container z-index */
+.toast-z-index {
+    z-index: 11;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .navbar-nav .nav-item {
