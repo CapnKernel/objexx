@@ -23,6 +23,17 @@
     font-size: 1.5rem;
 }
 
+/* Container icon alignment for move form */
+/* Not working very well yet */
+.container-icon {
+    display: inline-block;
+    width: 1.5em;
+    min-width: 1.5em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 /* Toast container z-index */
 .toast-z-index {
     z-index: 11;

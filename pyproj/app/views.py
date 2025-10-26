@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import transaction
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -29,40 +29,54 @@ def dash_stats(request):
 
 
 def scan_redirect(request):
-    """Handle barcode scanning - redirect to item or new item page"""
+    """Handle barcode scanning - redirect to item, to action page, or new item page"""
     code = request.GET.get('barcode', '').strip()
 
     # If q is empty or missing, return 404
     if not code:
         raise Http404("No barcode provided")
 
-    item = None
-    # Try to find item by internal barcode using regex
-    match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", code)
-    if match:
-        try:
-            item = Item.objects.get(id=match.group(1))
-        except Item.DoesNotExist:
-            pass
-
-    if not item:
-        # If it wasn't the internal barcode of an item, try it as an external.
-        try:
-            external_barcode = ExternalBarcode.objects.get(code=code)
-            item = external_barcode.item
-        except ExternalBarcode.DoesNotExist:
-            pass
-
-    if item:
+    if item := Item.from_any_barcode(code):
         # If either way we found an item, redirect to its detail page
         # Update last_scanned_at timestamp with UTC datetime
         item.last_scanned_at = datetime.utcnow()
         item.save()
+        # Store the scanned item ID in session for action views
+        # FIXME: Ditch use of session by modifying the scan barcode text input form to have a hidden field
+        # for the last scanned barcode, if and only if the last thing we scanned was a valid barcode.
+        request.session['last_scanned_item_id'] = item.id
         return redirect(item)
 
+    # So we don't have an item.  Check if this is an action barcode (e.g., V=AUDIT)
+    action_match = re.match(f"^{re.escape(settings.BARCODE_VERB_PREFIX)}(.+)$", code)
+    if action_match:
+        action_name = action_match.group(1).lower()
+        id_of_last_scanned_item = request.session.get('last_scanned_item_id')
+        if id_of_last_scanned_item:
+            try:
+                # Verify the item exists
+                Item.objects.get(id=id_of_last_scanned_item)
+                # Redirect to the action URL instead of calling the function directly
+                url = reverse('app:item_action', kwargs={"pk": id_of_last_scanned_item, "action": action_name})
+                return redirect(url)
+            except Item.DoesNotExist:
+                raise Http404(f"Item {id_of_last_scanned_item} for action '{action_name}' not found")
+        # No last scanned item found - return 400 Bad Request
+        return HttpResponseBadRequest(f"Action '{action_name}' requires a previously scanned item")
+
     # If no item found (could be new!), redirect to new item page
+    # FIXME: Somewhere we should add code so that if the barcode isn't a valid format for our internal
+    # barcodes, we ask to scan a brand new internal barcode, so we can create that item with the external barcode.
     url = reverse('app:new_item', query={'barcode': code})
     return HttpResponseRedirect(url)
+
+
+def item_action(request, pk, action_name):
+    """Generic handler for item actions."""
+    action_func = _action_registry.get(action_name)
+    if action_func:
+        return action_func(request, pk)
+    raise Http404(f"Action '{action_name}' not found")
 
 
 def new_item(request):
@@ -71,15 +85,16 @@ def new_item(request):
     possible_new_id = None
 
     # Could this be a valid barcode?
+    # First, does it start with the prefix?
     match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", barcode)
     if match:
-        item_id = match.group(1)
-        if not Item.objects.filter(id=item_id).exists():
-            possible_new_id = item_id
+        item = Item.from_barcode(barcode)
+        if item:
+            return redirect(item)
 
     context = {
         'barcode': barcode,
-        'possible_new_id': possible_new_id,
+        'possible_new_id': match.group(1),
     }
 
     return render(request, 'app/new_item.html', context)
@@ -101,6 +116,7 @@ def item_detail(request, pk):
 
 def import_items(request):
     """Handle CSV import of items"""
+    # FIXME: Move this to a separate file, e.g., import_items.py
     if request.method == 'POST':
         form = CSVImportForm(request.POST)
         ctx = {'form': form}

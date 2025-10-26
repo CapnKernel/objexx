@@ -1,0 +1,100 @@
+{% extends "app/base.html" %}
+{% load partials %}
+
+{% block title %}
+    Move Item - Inventory Management
+{% endblock title %}
+
+{% block barcode_form %}
+{% endblock barcode_form %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Move Item</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">Moving Item #{{ item.id }}</h5>
+                        <p class="mb-0">
+                            <strong>Name:</strong> {{ item.name }}
+                        </p>
+                        {% if item.description %}
+                            <p class="mb-0">
+                                <strong>Description:</strong> {{ item.description }}
+                            </p>
+                        {% endif %}
+                        <p class="mb-0">
+                            <strong>Current Location:</strong> {{ item.path }}
+                        </p>
+                    </div>
+
+                    <!-- Container options will be loaded here by HTMX -->
+                    <div id="container-options"
+                         hx-get="{% url 'app:move_container_options' pk=item.pk %}"
+                         hx-trigger="load, keyup from:[name='barcode'] delay:500ms, change from:[name='show_all']"
+                         hx-include="[name='show_all'],[name='barcode']">
+                        {% partialdef item-move-partial %}
+                        <!-- Barcode scanning form -->
+                        <form method="post"
+                              action="{% url 'app:item_action' action='move' pk=item.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="barcode" class="form-label">Scan destination barcode):</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="barcode"
+                                       name="barcode"
+                                       placeholder="Scan destination barcode..."
+                                       aria-label="Scan destination barcode"
+                                       autofocus
+                                       hx-on:keyup="if (event.key === 'Enter') { this.form.submit(); }">
+                                <div class="form-text">Enter the barcode of the destination item or container, then press Enter to move</div>
+                            </div>
+                        </form>
+                        {% comment %}
+                        <!-- Dropdown selection form -->
+                        <form method="post"
+                              action="{% url 'app:item_action' action='move' pk=item.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="barcode" class="form-label">Or select from dropdown:</label>
+
+                                <!-- Container filter checkbox -->
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="show_all"
+                                           name="show_all">
+                                    <label class="form-check-label" for="show_all">Show all</label>
+                                </div>
+
+                                <select class="form-select" id="barcode" name="barcode" {% if barcode_text %}disabled{% endif %}>
+                                    <option value="">-- Select a container --</option>
+                                    {% for item in items %}
+                                        <option value="{{ item.barcode_string }}">
+                                            <span class="container-icon">{{ item.is_container|yesno:"📦,&nbsp;"|safe }}</span>{{ item.path }}
+                                        </option>
+                                    {% endfor %}
+                                    <option value="root">-- Root Level (No Container) --</option>
+                                </select>
+                                <div class="form-text">Select where to move this item using the dropdown</div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'app:item_detail' item.id %}"
+                                   class="btn btn-secondary me-md-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Move Item</button>
+                            </div>
+                        </form>
+                        {% endcomment %}
+                        {% endpartialdef item-move-partial %}
+                        {% partial item-move-partial %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}
