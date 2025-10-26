@@ -125,6 +125,20 @@ class Item(models.Model):
 
         return children
 
+    def is_ancestor_of(self, other_item):
+        """Check if this item is an ancestor of another item (to prevent cycles)"""
+        if self == other_item:
+            return True  # An item is considered its own ancestor
+
+        # Walk up the parent chain of other_item to see if we find self
+        current = other_item
+        while current and current.parent:
+            if current.parent == self:
+                return True
+            current = current.parent
+
+        return False
+
 
 class ExternalBarcode(models.Model):
     """
