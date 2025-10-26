@@ -19,28 +19,36 @@
             <div class="col-12">
                 <h2>Inventory Dashboard</h2>
                 <p class="lead">Welcome to your inventory management system.</p>
-                <div class="row mt-4">
-                    <div class="col-md-4"
-                        hx-get="{% url 'app:total_items_partial' %}"
-                        hx-trigger="load">
-                        {% partial total-items-card %}
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center inventory-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Containers</h5>
-                                <p class="card-text display-6">0</p>
+                <div class="row mt-4"
+                     hx-get="{% url 'app:dash_stats' %}"
+                     hx-trigger="load">
+                    {% partialdef dash-stats-cards %}
+                        <div class="col-md-4">
+                            <div class="card text-center inventory-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Items</h5>
+                                    <p class="card-text display-6">{{ total_items }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center inventory-card">
-                            <div class="card-body">
-                                <h5 class="card-title">Recent Activity</h5>
-                                <p class="card-text display-6">0</p>
+                        <div class="col-md-4">
+                            <div class="card text-center inventory-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Containers</h5>
+                                    <p class="card-text display-6">{{ container_count }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                        <div class="col-md-4">
+                            <div class="card text-center inventory-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Recent Activity</h5>
+                                    <p class="card-text display-6">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endpartialdef %}
+                    {% partial dash-stats-cards %}
                 </div>
             </div>
         </div>
@@ -86,12 +94,3 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 {% endblock extra_js %}
-
-{% partialdef total-items-card %}
-    <div class="card text-center inventory-card">
-        <div class="card-body">
-            <h5 class="card-title">Total Items</h5>
-            <p class="card-text display-6">{{ total_items }}</p>
-        </div>
-    </div>
-{% endpartialdef %}

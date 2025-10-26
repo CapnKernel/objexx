@@ -15,16 +15,16 @@ from .forms import CSVImportForm
 
 def inventory_dashboard(request):
     """Main inventory management dashboard"""
-    total_items = Item.objects.filter(deleted=False).count()
-    context = {'total_items': total_items}
-    return render(request, 'app/dash.html', context)
+    return render(request, 'app/dash.html')
 
 
-def total_items_partial(request):
-    """HTMX endpoint for total items partial"""
+def dash_stats(request):
+    """HTMX endpoint for dashboard statistics"""
     total_items = Item.objects.filter(deleted=False).count()
-    context = {'total_items': total_items}
-    return render(request, 'app/dash.html#total-items-card', context)
+    # Count containers (items that have children)
+    container_count = Item.objects.filter(deleted=False, children__isnull=False).distinct().count()
+    context = {'total_items': total_items, 'container_count': container_count}
+    return render(request, 'app/dash.html#dash-stats-cards', context)
 
 
 def scan_redirect(request):

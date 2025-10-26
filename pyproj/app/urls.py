@@ -5,7 +5,7 @@ app_name = 'app'
 
 urlpatterns = [
     path('', views.inventory_dashboard, name='dash'),
-    path('partials/total-items/', views.total_items_partial, name='total_items_partial'),
+    path('partials/dash-stats/', views.dash_stats, name='dash_stats'),
     path('item/', views.item_list, name='item_list'),
     path('item/<int:pk>/', views.item_detail, name='item_detail'),
     path('item/new/', views.new_item, name='new_item'),
