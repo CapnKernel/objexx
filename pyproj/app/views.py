@@ -68,7 +68,20 @@ def scan_redirect(request):
 def new_item(request):
     """Display a form for creating a new item"""
     barcode = request.GET.get('barcode', '').strip()
-    context = {'barcode': barcode}
+    possible_new_id = None
+
+    # Could this be a valid barcode?
+    match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", barcode)
+    if match:
+        item_id = match.group(1)
+        if not Item.objects.filter(id=item_id).exists():
+            possible_new_id = item_id
+
+    context = {
+        'barcode': barcode,
+        'possible_new_id': possible_new_id,
+    }
+
     return render(request, 'app/new_item.html', context)
 
 

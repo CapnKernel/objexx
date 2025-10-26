@@ -25,6 +25,9 @@
                     </div>
                 {% endif %}
                 <p>Form functionality will be implemented here.</p>
+                {% if possible_new_id %}
+                    <p><a href='{% url "admin:app_item_add" %}?id={{ possible_new_id }}'>Add in admin</a>.</p>
+                {% endif %}
             </div>
         </div>
     </div>
