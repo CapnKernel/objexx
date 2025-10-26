@@ -70,10 +70,12 @@
                         </li>
                     </ul>
                     {% endblock nav %}
+                    {% block barcode_form %}
                     <form class="d-flex me-3" method="get" action="{% url 'app:scan_redirect' %}">
                         <input class="form-control me-2" type="text" name="barcode" placeholder="Scan barcode..."
                                aria-label="Scan barcode" autofocus>
                     </form>
+                    {% endblock barcode_form %}
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
                             <li class="nav-item">
