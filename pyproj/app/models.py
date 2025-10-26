@@ -1,3 +1,6 @@
+import re
+
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
@@ -9,6 +12,42 @@ class Item(models.Model):
     Represents any item in the lab - from tools to components to containers.
     Uses recursive parent-child relationship for containment.
     """
+
+    @staticmethod
+    def from_barcode(barcode_string):
+        """
+        Attempt to find an Item from an internal barcode string.
+        Returns the Item if found, None otherwise.
+        """
+        match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", barcode_string)
+        if match:
+            try:
+                return Item.objects.get(id=match.group(1), deleted=False)
+            except Item.DoesNotExist:
+                pass
+
+        return None
+
+    @staticmethod
+    def from_any_barcode(barcode_string):
+        """
+        Attempt to find an Item from any barcode string (internal or external).
+        Returns the Item if found, None otherwise.  This will fail if more than
+        one item shares the same external barcode.
+        """
+        # Try internal barcode first
+        item = Item.from_barcode(barcode_string)
+        if item:
+            return item
+
+        # Try external barcodes
+        try:
+            external_barcode = ExternalBarcode.objects.get(code=barcode_string)
+            return external_barcode.item
+        except ExternalBarcode.DoesNotExist:
+            pass
+
+        return None
 
     name = models.CharField(max_length=255, help_text="Common name for the item")
     description = models.TextField(blank=True, help_text="Additional details about the item")
