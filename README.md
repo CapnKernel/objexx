@@ -1,77 +1,81 @@
-# Objexx - Physical Inventory Management System
+# Objexx - A small inventory management system
 
-Objexx is a Django-based inventory management system designed specifically for tracking physical items in labs, workshops, and maker spaces. It combines barcode scanning with hierarchical container management to provide a complete solution for organizing and locating physical assets.
+Objexx is a Django-based inventory management system which tracks physical items in labs, workshops, and maker spaces. It combines barcode scanning with hierarchical container management to organise and locate physical assets.
 
 ## 🎯 What Problem Does This Solve?
 
-Traditional inventory systems often struggle with the physical reality of items being stored inside other items. Objexx addresses this by:
+Objexx is built around:
 
-- **Tracking containment relationships** - Items can be stored inside containers, which can themselves be stored in larger containers
-- **Barcode-first workflow** - Designed around scanning physical barcodes rather than manual data entry
-- **Real-world scanning patterns** - Supports the common workflow of scanning an item, then scanning an action barcode
-- **Flexible barcode support** - Works with both internal system barcodes and external manufacturer barcodes
+- **Tracking containment relationships** - Items can be stored inside other items, which can themselves be stored
+    in larger containers
+- **A barcode-first workflow** - As much as possible, you scan barcodes rather than keying in item IDs
+- **Performing actions on items** - Scan an item, then scan an action barcode to do something to that item
+- **Flexible barcode support** - Objexx also records an item's external barcodes, such as UPC or order or shipping numbers
 
 ## 🏗️ Architecture & Design Philosophy
 
 ### Hierarchical Item Model
-Items in Objexx form a tree structure where any item can be a container for other items. This mirrors real-world storage scenarios where:
-- Tools are stored in toolboxes
-- Components are stored in bins
-- Bins are stored on shelves
+
+In the real world, items are often stored in other items.  For example:
+
+- Components are stored in boxes
+- Boxes are stored on shelves
 - Shelves are in rooms or buildings
 
-### Barcode-Centric Design
-The system is built around barcode scanning as the primary interaction method:
+Items in Objexx form a tree structure where any item can be a container for other items.
 
-- **Internal Barcodes**: System-generated barcodes in format `PREFIX123` (e.g., `OBJ123`)
-- **External Barcodes**: Manufacturer barcodes (UPC, serial numbers, etc.)
-- **Action Barcodes**: Special barcodes that trigger actions on the last scanned item (e.g., `V=AUDIT`)
+### Barcode-centric Design
 
-### Key Features
+You should be able to do most of what you want by just scanning barcodes, with keyboard as last resort for things like descriptions.
 
-#### 📱 Barcode Scanning Workflow
+There are three kinds of barcodes:
+
+- **Internal Barcodes**: These are what you'd print on sticky labels, and apply to your stuff.  Each internal barcode has a system-defined prefix, followed by a unique number, such as `T=1241`.
+- **External Barcodes**: Manufacturer barcodes (UPC, serial numbers, shipping etc.)
+- **Action Barcodes**: Special barcodes that trigger actions on the last scanned item (e.g., `V=AUDIT`).  These can be printed on a card and kept nearby.
+
+#### 📱 General Barcode Scanning Workflow
 ```
 Scan Item → View Details → Scan Action → Perform Action
 ```
 
-The system maintains context between scans, allowing you to scan an item and then scan an action barcode to perform operations on that item.
+Objexxm maintains context between scans, allowing you to scan an item and then scan an action barcode to perform operations on that item.
 
 #### 🔄 Container Management
 - **Tree View**: Visual hierarchy of contained items
 - **Move Operations**: Change item locations while maintaining data integrity
 - **Soft Deletion**: Remove items without losing historical data
 
-#### 📊 Multi-format Barcode Support
-- **Internal System Barcodes**: `OBJ123`, `OBJ456`
-- **External Barcodes**: UPC codes, serial numbers, distributor codes
-- **Action Barcodes**: `V=MOVE`, `V=AUDIT`, `V=DELETE`
-
 #### 🎨 Modern Web Interface
 - **HTMX Integration**: Dynamic updates without full page reloads
 - **Bootstrap 5**: Responsive, mobile-friendly design
-- **Tree Visualization**: Clear display of containment relationships
+
+## Caveat: Work in progress
+This is a super-young project.  Features are still being added, and the UI/UX is still rough around the edges.  If you want to contribute, please do!
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.8+
-- PostgreSQL (recommended) or SQLite
-- Barcode scanner (USB or Bluetooth)
+- A Django-supported database
+- Barcode scanner (USB or Bluetooth, one that emulates a code being typed on a keyboard, followed by Enter)
 
 ### Installation
 ```bash
-cd pyproj/
+git clone https://github.com/CapnKernel/objexx.git
+cd objexx/pyproj
 python3 -m venv env
 source env/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Generate secret key
-sed -i "3c\SECRET_KEY = \"$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')\"" .env
-
-# Configure local settings
+# Create local settings file from template.  Contains settings such as
+# DEBUG, DATABASES, ALLOWED_HOSTS, MEDIA_ROOT, etc.
 cp conf/local_settings.py.template conf/local_settings.py
-# Edit conf/local_settings.py based on your deployment type
+# Generate secret key and patch into conf/local_settings.py
+sed -i "s/^\(SECRET_KEY = \).*$/\\1\"$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())' | sed 's/[&\/]/\\&/g')\"/" conf/local_settings.py
+# You should also edit ADMINS.  There's more settings to configure later
+# if and when you want to deploy somewhere.
 
 # Setup database
 ./manage.py migrate
@@ -79,12 +83,14 @@ cp conf/local_settings.py.template conf/local_settings.py
 
 # Start development server
 ./manage.py runserver
+
+# Access the app at http://localhost:8000/
 ```
 
 ## 🎮 Usage Examples
 
 ### Basic Item Workflow
-1. **Scan New Item**: System detects unknown barcode and prompts for item creation
+1. **Scan New Item**: Scanning an unknown barcode matching the internal format prompts for item creation
 2. **View Item Details**: See item information, location path, and contained items
 3. **Move Item**: Scan destination container barcode to relocate item
 4. **Audit**: Scan action barcode to mark item as verified
@@ -108,7 +114,6 @@ pyproj/
 │   ├── views.py           # Scan handling, item management views
 │   ├── actions.py         # Barcode-triggered actions
 │   └── templates/app/     # HTML templates
-├── authuser/              # Custom authentication app
 ├── conf/                  # Django settings and configuration
 └── static/css/           # Stylesheets
 ```
@@ -116,19 +121,11 @@ pyproj/
 ## 🎯 Who Is This For?
 
 Objexx is ideal for:
+- **Hobbyists**: Organize personal collections and tools
 - **Research Labs**: Track equipment, chemicals, and supplies
 - **Maker Spaces**: Organize tools, components, and projects
 - **Workshops**: Manage tools, materials, and inventory
 - **Small Businesses**: Track physical assets and inventory
-- **Educational Institutions**: Equipment and supply management
-
-## 🤔 Why This Approach?
-
-### Real-World Inspired
-The system design reflects how people actually work with physical items:
-- Items are scanned, not manually looked up
-- Actions follow physical workflows (scan item, scan action)
-- Containment mirrors real storage relationships
 
 ### Data Integrity
 - **Soft Deletion**: Never lose historical data
@@ -145,33 +142,18 @@ The system design reflects how people actually work with physical items:
 ### Barcode Prefixes
 Set in `settings.py`:
 ```python
-BARCODE_PREFIX = "OBJ"        # Internal barcode format: OBJ123
-BARCODE_VERB_PREFIX = "V="    # Action barcode format: V=AUDIT
-```
-
-### Database
-Configure in `conf/local_settings.py`:
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'objexx',
-        'USER': 'objexx_user',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
+BARCODE_PREFIX = "T="        # Internal barcode format example: T=1466
+BARCODE_VERB_PREFIX = "V="    # Action barcode format example: V=AUDIT
 ```
 
 ## 📄 License
 
-[Add your license here]
+MIT license.  https://opensource.org/license/mit
+
 
 ## 🤝 Contributing
 
+Changes welcome.
+
 [Add contribution guidelines here]
 
----
-
-**Objexx** - Because physical things need digital organization too.
