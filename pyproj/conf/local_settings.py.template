@@ -7,69 +7,53 @@ SITE_ID = 1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = False
 
 ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['192.168.100.154', 'example.org']
 
 # Needed for Django Debug Toolbar
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
-API_ALLOW_IPV4_SUBNET = '127.0.0.0/24'
-API_ALLOW_IPV6_SUBNET = None
+# Generate secret key thus:
+# sed -i "3c\SECRET_KEY = \"$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')\"" conf/local_settings.py
+SECRET_KEY = "SECRET KEY GOES HERE"
 
-# https://utils.brntn.me/database-url/
 DATABASES = {
     'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
+    # 'default': dj_database_url.config(default=f'mysql://dbuser:ridiculous-password@:/register'),
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'objexx',
+    #     'USER': 'objexx_user',
+    #     'PASSWORD': 'your_password',
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
 }
 
 STATIC_ROOT = None
 MEDIA_ROOT = BASE_DIR / 'media/'
+# STATIC_ROOT = '/var/www/objexx/static/'
+# MEDIA_ROOT = '/var/www/objexx/media/'
 
-ADMINS = [("Mitch Davis", "mjd@afork.com")]
+ADMINS = [("Your name", "name@example.com")]
+
+# Fill in
+# EMAIL_HOST = 'mail.smtp25.com'
+# EMAIL_PORT = 2525
+# EMAIL_HOST_USER = 'smtpuser'
+# EMAIL_HOST_PASSWORD = 'smtppassword'
 
 DBBACKUP_HOSTNAME = 'local'
+# DBBACKUP_HOSTNAME = 'website.example.com'
 DBBACKUP_FILENAME_TEMPLATE = '{servername}-app-{datetime}.sql'
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR / 'backups'}
+# DBBACKUP_STORAGE_OPTIONS = {'location': '/var/www/objexx/backups/'}
 DBBACKUP_CLEANUP_KEEP = 2
 
 BARCODE_PREFIX = 'T='
 BARCODE_VERB_PREFIX = 'V='
-# -- Above here is local sqlite.  Below, deployed mysql
-
-from pathlib import Path
-import dj_database_url
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SITE_ID = 1
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ['192.168.100.154', 'example.org']
-
-# Needed for Django Debug Toolbar
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
-
-API_ALLOW_IPV4_SUBNET = '1.2.3.4/32'
-API_ALLOW_IPV6_SUBNET = None
-
-# https://utils.brntn.me/database-url/
-DATABASES = {
-    'default': dj_database_url.config(default=f'mysql://dbuser:ridiculous-password@:/register'),
-}
-
-STATIC_ROOT = '/var/www/register-static/'
-MEDIA_ROOT = '/var/www/register-media/'
-
-ADMINS = [("Mitch Davis", "mjd@afork.com")]
-
-DBBACKUP_HOSTNAME = 'website.example.com'
-DBBACKUP_FILENAME_TEMPLATE = '{servername}-app-{datetime}.sql'
-DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location': '/var/www/myapp/'}
-DBBACKUP_CLEANUP_KEEP = 10
