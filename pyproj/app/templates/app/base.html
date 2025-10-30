@@ -66,7 +66,7 @@
                             <a class="nav-link{{ nav.new }}" href="#">New item</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                            <a class="nav-link" href="{% block item-admin-link %}{% url 'admin:index' %}{% endblock item-admin-link %}">Admin</a>
                         </li>
                     </ul>
                     {% endblock nav %}

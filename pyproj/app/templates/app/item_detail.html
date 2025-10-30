@@ -9,6 +9,10 @@
 {{ block.super }}
 {% endblock nav %}
 
+{% block item-admin-link %}
+{% url 'admin:app_item_change' item.id %}
+{% endblock item-admin-link %}
+
 {% block body %}
 <div class="row">
     <div class="col-12">
