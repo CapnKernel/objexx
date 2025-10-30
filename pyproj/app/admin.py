@@ -1,7 +1,26 @@
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils.html import format_html
 from .models import Item, ExternalBarcode, ItemHistory
+
+
+class ExternalBarcodeInline(admin.TabularInline):
+    """Inline admin for ExternalBarcode to show on Item admin page"""
+
+    model = ExternalBarcode
+    extra = 1
+    readonly_fields = ['created_at', 'admin_link']
+    fields = ['admin_link', 'code', 'barcode_type', 'notes', 'created_at']
+
+    def admin_link(self, obj):
+        """Create a link to the external barcode's admin page"""
+        if obj.pk:
+            url = reverse('admin:app_externalbarcode_change', args=[obj.pk])
+            return format_html('<a href="{}">Edit</a>', url)
+        return "-"
+
+    admin_link.short_description = "Admin"
 
 
 @admin.register(Item)
@@ -10,6 +29,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_filter = ['deleted', 'created_at']
     search_fields = ['name', 'description']
     readonly_fields = ['created_at', 'updated_at']
+    inlines = [ExternalBarcodeInline]
 
     def save_model(self, request, obj, form, change):
         """Override save_model to set custom ID if provided in query parameter"""
