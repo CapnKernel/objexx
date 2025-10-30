@@ -1,0 +1,56 @@
+{% extends "app/base.html" %}
+
+{% load static %}
+{% load navtag %}
+
+{% block title %}Add External Barcode to an Item{% endblock title %}
+
+{% block barcode_form %}
+{% endblock barcode_form %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Add External Barcode to an Item</h2>
+            </div>
+            <div class="card-body">
+                {% if barcode %}
+                    <div class="alert alert-info">
+                        <strong>External Barcode:</strong> <code>{{ barcode }}</code>
+                        <br><small>Scan barcode of an existing item to associate this external barcode with it.</small>
+                    </div>
+                {% endif %}
+
+                {% if error %}
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> {{ error }}
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="item_barcode" class="form-label">Scan Item Barcode</label>
+                        <input type="text"
+                               class="form-control"
+                               id="item_barcode"
+                               name="item_barcode"
+                               placeholder="Scan item barcode..."
+                               aria-label="Scan item barcode"
+                               autofocus>
+                        <div class="form-text">Scan the barcode of the item you want to associate with the external barcode, then press Enter</div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'app:dash' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Associate Barcode</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}

@@ -71,7 +71,9 @@ def scan_redirect(request):
         url = reverse('app:new_item', query={'barcode': code})
         return HttpResponseRedirect(url)
 
-    raise Http404(f"Don't know what to do with: {code}")
+    # Perhaps it's an external barcode we haven't seen before for an existing item
+    url = reverse('app:new_external_barcode', query={'barcode': code})
+    return HttpResponseRedirect(url)
 
 
 def item_action(request, pk, action_name):
@@ -141,6 +143,32 @@ def new_item(request):
     return render(request, 'app/new_item.html', context)
 
 
+def new_external_barcode(request):
+    """Display a form for creating a new item with an external barcode"""
+    external_barcode_str = request.GET.get('barcode', '').strip()
+    if not external_barcode_str:
+        return HttpResponseBadRequest("External barcode is required")
+
+    if request.method == 'POST':
+        item_barcode = request.POST.get('item_barcode', '').strip()
+        if not item_barcode:
+            return HttpResponseBadRequest("Item barcode is required")
+        # Check if item with this barcode already exists
+        item = Item.from_barcode(item_barcode)
+        if not item:
+            return HttpResponseBadRequest("Item not found")
+
+        create_new_external_barcodes_for_item(item, external_barcode_str)
+        item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
+        item.save()
+
+        return redirect(item)
+
+    context = {
+        'barcode': external_barcode_str,
+    }
+
+    return render(request, 'app/new_external_barcode.html', context)
 
 
 def item_list(request):
