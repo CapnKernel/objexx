@@ -114,6 +114,7 @@ class Migration(migrations.Migration):
                             ("ORDER", "Purchase Order"),
                             ("SERIAL", "Serial Number"),
                             ("DISTRIBUTOR", "Distributor Part Number"),
+                            ("SHIPPING", "Shipping Barcode"),
                             ("OTHER", "Other"),
                         ],
                         default="UPC",
