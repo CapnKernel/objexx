@@ -1,6 +1,9 @@
+from datetime import datetime
 import re
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import path, reverse  # , Resolver404, get_resolver
@@ -84,11 +87,17 @@ def move(request, pk):
             context['error'] = f"Cannot move item into its own descendant: {destination_item.path}"
             return render(request, 'app/move.html', context)
 
-        src_item.parent = destination_item
-        src_item.save()
+        with transaction.atomic():
+            destination_item.last_scanned_at = src_item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
+            src_item.parent = destination_item
 
-        # FIXME: Add a toast to say result.
-        # One toast for "didn't move" and one for "moved to X".
+            destination_item.save()
+            src_item.save()
+
+            # FIXME: Create an ItemHistory record for the move.
+
+            # FIXME: Add a toast to say result.
+            # One toast for "didn't move" and one for "moved to X".
 
         return redirect(src_item)
 
