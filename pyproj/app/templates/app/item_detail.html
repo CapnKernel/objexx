@@ -146,22 +146,13 @@
                 {% if item.is_container %}
                 <div class="row mt-4">
                     <div class="col-12">
-                        <h4>Contents</h4>
-                        {% if item.children.exists %}
-                        <div class="list-group">
-                            {% for child in item.children.all %}
-                                {% if not child.deleted %}
-                                <a href="{% url 'app:item_detail' pk=child.id %}" class="list-group-item list-group-item-action">
-                                    {{ child.name }}
-                                    {% if child.is_container %}
-                                        <span class="badge bg-primary float-end">Container</span>
-                                    {% endif %}
-                                </a>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
+                        <h4>Contents Tree</h4>
+                        {% if tree_structure %}
+                            {% with tree=tree_structure %}
+                                {% include "app/tree_view.html" %}
+                            {% endwith %}
                         {% else %}
-                        <p class="text-muted">This container is empty.</p>
+                            <p class="text-muted">This container is empty.</p>
                         {% endif %}
                     </div>
                 </div>

@@ -111,7 +111,8 @@ def item_list(request):
 def item_detail(request, pk):
     """Display details for a specific item"""
     item = get_object_or_404(Item, pk=pk)
-    context = {'item': item}
+    tree_structure = item.get_contained_tree() if item.is_container else None
+    context = {'item': item, 'tree_structure': tree_structure}
     return render(request, 'app/item_detail.html', context)
 
 

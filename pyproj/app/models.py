@@ -164,6 +164,17 @@ class Item(models.Model):
 
         return children
 
+    def get_contained_tree(self):
+        """Get a tree structure of all contained items (non-deleted children only)"""
+
+        def build_tree(item):
+            tree = {'item': item, 'children': []}
+            for child in item.children.filter(deleted=False).order_by('id'):
+                tree['children'].append(build_tree(child))
+            return tree
+
+        return build_tree(self)
+
     def is_ancestor_of(self, other_item):
         """Check if this item is an ancestor of another item (to prevent cycles)"""
         if self == other_item:

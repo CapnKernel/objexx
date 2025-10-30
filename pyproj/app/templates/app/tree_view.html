@@ -1,0 +1,24 @@
+{% load static %}
+
+<div class="tree-view">
+    <ul class="tree">
+        {% for node in tree.children %}
+            <li class="tree-item">
+                <div class="tree-node">
+                    <a href="{% url 'app:item_detail' pk=node.item.id %}" class="tree-link">
+                        {{ node.item.name }}
+                    </a>
+                    {% if node.item.is_container %}
+                        <span class="badge bg-primary ms-2">Container</span>
+                    {% endif %}
+                    <small class="text-muted ms-2">({{ node.item.barcode_string }})</small>
+                </div>
+                {% if node.children %}
+                    {% with tree=node %}
+                        {% include "app/tree_view.html" %}
+                    {% endwith %}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
