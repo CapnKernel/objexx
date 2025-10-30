@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .models import ExternalBarcode, Item
-from .forms import CSVImportForm
+from .forms import CSVImportForm, ItemCreateForm
 
 
 def inventory_dashboard(request):
@@ -65,11 +65,13 @@ def scan_redirect(request):
         # No last scanned item found - return 400 Bad Request
         return HttpResponseBadRequest(f"Action '{action_name}' requires a previously scanned item")
 
-    # If no item found (could be new!), redirect to new item page
-    # FIXME: Somewhere we should add code so that if the barcode isn't a valid format for our internal
-    # barcodes, we ask to scan a brand new internal barcode, so we can create that item with the external barcode.
-    url = reverse('app:new_item', query={'barcode': code})
-    return HttpResponseRedirect(url)
+    # Perhaps it's a barcode in our internal format, but we've never seen it before
+    if Item.get_possible_item_id_from_internal_barcode(code):
+        # Redirect to new item page with this ID pre-filled
+        url = reverse('app:new_item', query={'barcode': code})
+        return HttpResponseRedirect(url)
+
+    raise Http404(f"Don't know what to do with: {code}")
 
 
 def item_action(request, pk, action_name):
@@ -80,25 +82,65 @@ def item_action(request, pk, action_name):
     raise Http404(f"Action '{action_name}' not found")
 
 
-def new_item(request):
-    """Display a form for creating a new item"""
-    barcode = request.GET.get('barcode', '').strip()
-    possible_new_id = None
+def create_new_external_barcodes_for_item(item, external_barcodes_text):
+    """Helper function to create ExternalBarcode objects from textarea input"""
+    barcodes = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
+    with transaction.atomic():
+        for barcode_value in barcodes:
+            if item.external_barcodes.filter(code=barcode_value).exists():
+                continue  # Skip existing barcodes
+            data = {
+                'code': barcode_value,
+                'item': item,
+                'barcode_type': ExternalBarcode.guess_type_from_str(barcode_value),
+            }
+            external_barcode_object = ExternalBarcode(**data)
+            external_barcode_object.save()
 
-    # Could this be a valid barcode?
-    # First, does it start with the prefix?
-    match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", barcode)
-    if match:
-        item = Item.from_barcode(barcode)
-        if item:
-            return redirect(item)
+
+def new_item(request):
+    """Display a form for creating a new item with a given internal barcode"""
+    barcode = request.GET.get('barcode', '').strip()
+    if not barcode:
+        return HttpResponseBadRequest("Internal barcode for item is required")
+    possible_new_id = Item.get_possible_item_id_from_internal_barcode(barcode)
+    if not possible_new_id:
+        return HttpResponseBadRequest("Internal barcode for item is not in required format")
+    item = Item.from_barcode(barcode)
+    if item:
+        return HttpResponseBadRequest("Item already exists")
+
+    errors = None
+
+    if request.method == 'POST':
+        # FIXME: Where do we patch the id from the barcode into the item?
+        form = ItemCreateForm(request.POST or None)
+        if form.is_valid():
+            with transaction.atomic():
+                item = form.save(commit=False)
+                item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
+                # Here's where we patch in the id so it doesn't have an existing one
+                item.pk = possible_new_id
+                item.save()
+
+                # Handle external barcodes from the textarea
+                external_barcodes_text = form.cleaned_data.get('external_barcodes', '').strip()
+                if external_barcodes_text:
+                    create_new_external_barcodes_for_item(item, external_barcodes_text)
+
+                return redirect(item)
+        else:
+            errors = form.errors
+    else:
+        form = ItemCreateForm()
 
     context = {
         'barcode': barcode,
-        'possible_new_id': match.group(1),
+        'form': form,
     }
-
     return render(request, 'app/new_item.html', context)
+
+
 
 
 def item_list(request):

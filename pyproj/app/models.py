@@ -29,6 +29,13 @@ class Item(models.Model):
         return None
 
     @staticmethod
+    def get_possible_item_id_from_internal_barcode(barcode_string):
+        match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", barcode_string)
+        if match:
+            return match.group(1)
+        return None
+
+    @staticmethod
     def from_any_barcode(barcode_string):
         """
         Attempt to find an Item from any barcode string (internal or external).
@@ -228,6 +235,15 @@ class ExternalBarcode(models.Model):
 
     def __str__(self):
         return f"{self.code} ({self.barcode_type}) -> {self.item.name}"
+
+    @staticmethod
+    def guess_type_from_str(barcode_string):
+        # Guess the barcode type.
+        if re.match(r'^\d{12,13}$', barcode_string):
+            # UPC or EAN
+            return 'UPC'
+        else:
+            return 'OTHER'
 
 
 class ItemHistory(models.Model):
