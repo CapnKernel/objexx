@@ -68,24 +68,36 @@ python3 -m venv env
 source env/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
+```
 
+## 🔧 Configuration
+
+Settings are stored in `conf/local_settings.py`, which is initially generated from `conf/local_settings.py.template`.  You'll need to copy the template then generate the secret key:
+```bash
 # Create local settings file from template.  Contains settings such as
 # DEBUG, DATABASES, ALLOWED_HOSTS, MEDIA_ROOT, etc.
 cp conf/local_settings.py.template conf/local_settings.py
 # Generate secret key and patch into conf/local_settings.py
 sed -i "s/^\(SECRET_KEY = \).*$/\\1\"$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())' | sed 's/[&\/]/\\&/g')\"/" conf/local_settings.py
-# You should also edit ADMINS.  There's more settings to configure later
-# if and when you want to deploy somewhere.
+```
 
+In `conf/local_settings.py`, you should also edit `ADMINS`.  There are more settings to configure later
+if and when you want to deploy somewhere.
+
+To change barcode prefixes, edit `BARCODE_PREFIX` and `BARCODE_VERB_PREFIX`.
+
+Then:
+```
 # Setup database
 ./manage.py migrate
 ./manage.py createsuperuser
 
 # Start development server
 ./manage.py runserver
-
-# Access the app at http://localhost:8000/
 ```
+
+Access the app at http://localhost:8000/
+
 
 ## 🎮 Usage Examples
 
@@ -136,15 +148,6 @@ Objexx is ideal for:
 - **Action System**: Easy to add new barcode-triggered actions
 - **Barcode Types**: Support for multiple barcode formats
 - **Container Hierarchy**: Unlimited nesting depth
-
-## 🔧 Configuration
-
-### Barcode Prefixes
-Set in `settings.py`:
-```python
-BARCODE_PREFIX = "T="        # Internal barcode format example: T=1466
-BARCODE_VERB_PREFIX = "V="    # Action barcode format example: V=AUDIT
-```
 
 ## 📄 License
 
