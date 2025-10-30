@@ -3,6 +3,7 @@ from datetime import datetime
 from io import StringIO
 import re
 from urllib.parse import urlencode
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db import transaction
@@ -39,7 +40,7 @@ def scan_redirect(request):
     if item := Item.from_any_barcode(code):
         # If either way we found an item, redirect to its detail page
         # Update last_scanned_at timestamp with UTC datetime
-        item.last_scanned_at = datetime.utcnow()
+        item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
         item.save()
         # Store the scanned item ID in session for action views
         # FIXME: Ditch use of session by modifying the scan barcode text input form to have a hidden field
