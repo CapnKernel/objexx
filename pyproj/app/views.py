@@ -103,7 +103,7 @@ def new_item(request):
 
 def item_list(request):
     """Display a table of all items with links to details"""
-    items = Item.objects.filter(deleted=False).select_related('parent').order_by('name')
+    items = Item.objects.filter(deleted=False).select_related('parent').order_by('id')
     context = {'items': items}
     return render(request, 'app/item_list.html', context)
 
