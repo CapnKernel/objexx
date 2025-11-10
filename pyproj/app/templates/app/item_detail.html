@@ -57,6 +57,7 @@
                                     <td>
                                         {% if item.parent %}
                                             <a href="{% url 'app:item_detail' pk=item.parent.id %}">{{ item.parent.name }}</a>
+                                            &nbsp; <code>{{ item.parent.barcode_string }}</code>
                                         {% else %}
                                             <em>Root item</em>
                                         {% endif %}
