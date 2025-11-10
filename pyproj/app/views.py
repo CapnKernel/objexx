@@ -171,7 +171,13 @@ def new_external_barcode(request):
 
         return redirect(item)
 
+    lcsc = None
+    match = re.search(r'pc:(C\d+),', external_barcode_str)
+    if match:
+        lcsc = match.group(1)  # Extract LCSC part
+
     context = {
+        'lcsc': lcsc,
         'barcode': external_barcode_str,
     }
 

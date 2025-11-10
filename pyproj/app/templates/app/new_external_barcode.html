@@ -29,6 +29,12 @@
                     </div>
                 {% endif %}
 
+                {% if lcsc %}
+                    <div>
+                        <p>Possible LCSC part: <a href="https://www.lcsc.com/product-detail/{{ lcsc|urlencode }}.html">link</a>.
+                    </div>
+                {% endif %}
+
                 <form method="post">
                     {% csrf_token %}
 
