@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import StringIO
 import re
 from urllib.parse import urlencode
@@ -182,7 +182,13 @@ def item_detail(request, pk):
     """Display details for a specific item"""
     item = get_object_or_404(Item, pk=pk)
     tree_structure = item.get_contained_tree() if item.is_container else None
-    context = {'item': item, 'tree_structure': tree_structure}
+    updated_when_scanned = abs(item.updated_at - item.last_scanned_at) < timedelta(seconds=1)
+    context = {
+        'item': item,
+        'tree_structure': tree_structure,
+        'updated_when_scanned': updated_when_scanned,
+    }
+
     return render(request, 'app/item_detail.html', context)
 
 

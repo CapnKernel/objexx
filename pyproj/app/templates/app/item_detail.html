@@ -96,10 +96,21 @@
                                     <th>Created</th>
                                     <td>{{ item.created_at }}</td>
                                 </tr>
-                                <tr>
-                                    <th>Last Updated</th>
-                                    <td>{{ item.updated_at }}</td>
-                                </tr>
+                                {% if updated_when_scanned %}
+                                    <tr>
+                                        <th>Last Updated / Scanned</th>
+                                        <td>{{ item.updated_at }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <th>Last Updated</th>
+                                        <td>{{ item.updated_at }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last Scanned</th>
+                                        <td>{{ item.last_scanned_at }}</td>
+                                    </tr>
+                                {% endif %}
                                 {% if item.deleted %}
                                 <tr>
                                     <th>Deleted At</th>
