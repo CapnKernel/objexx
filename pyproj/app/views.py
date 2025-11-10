@@ -141,7 +141,13 @@ def new_item(request):
         else:
             errors = form.errors
     else:
-        form = ItemCreateForm()
+        # GET request - check for external barcode parameter
+        external_barcode = request.GET.get('external', '').strip()
+        initial_data = {}
+        if external_barcode:
+            initial_data['external_barcodes'] = external_barcode
+
+        form = ItemCreateForm(initial=initial_data)
 
     context = {
         'barcode': barcode,
@@ -163,6 +169,12 @@ def new_external_barcode(request):
         # Check if item with this barcode already exists
         item = Item.from_barcode(item_barcode)
         if not item:
+            # Check if this could be a valid new item barcode
+            possible_new_id = Item.get_possible_item_id_from_internal_barcode(item_barcode)
+            if possible_new_id:
+                # Redirect to new_item with both barcode and external parameters
+                url = reverse('app:new_item', query={'barcode': item_barcode, 'external': external_barcode_str})
+                return HttpResponseRedirect(url)
             return HttpResponseBadRequest("Item not found")
 
         create_new_external_barcodes_for_item(item, external_barcode_str)
