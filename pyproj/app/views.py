@@ -132,6 +132,14 @@ def new_item(request):
                 item.pk = possible_new_id
                 item.save()
 
+                # Save the selected parent to session for next time
+                parent = form.cleaned_data.get('parent')
+                if parent:
+                    request.session['last_used_parent_id'] = parent.id
+                elif 'last_used_parent_id' in request.session:
+                    # If no parent selected, remove the stored parent
+                    del request.session['last_used_parent_id']
+
                 # Handle external barcodes from the textarea
                 external_barcodes_text = form.cleaned_data.get('external_barcodes', '').strip()
                 if external_barcodes_text:
@@ -146,6 +154,17 @@ def new_item(request):
         initial_data = {}
         if external_barcode:
             initial_data['external_barcodes'] = external_barcode
+
+        # Set parent from session if available
+        last_parent_id = request.session.get('last_used_parent_id')
+        if last_parent_id:
+            try:
+                last_parent = Item.objects.get(id=last_parent_id, deleted=False)
+                initial_data['parent'] = last_parent
+            except Item.DoesNotExist:
+                # If the parent no longer exists, remove it from session
+                if 'last_used_parent_id' in self.request.session:
+                    del request.session['last_used_parent_id']
 
         form = ItemCreateForm(initial=initial_data)
 
