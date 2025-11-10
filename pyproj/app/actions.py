@@ -22,30 +22,7 @@ def action(func):
     action_name = func.__name__.lower()
     _action_registry[action_name] = func
 
-    # # Create URL pattern for this action with pk parameter
-    # url_name = f"{action_name}_action"
-    # url_pattern = path(f'action/{action_name}/<int:pk>/', func, name=url_name)
-    # _action_urlpatterns.append(url_pattern)
-
     return func
-
-
-# def action_to_view(action_name):
-#     """Convert an action name to a view function."""
-#     return _action_registry.get(action_name)
-
-
-# def action_to_url(action_name):
-#     """Convert an action name to its URL pattern name."""
-#     if action_name in _action_registry:
-#         return f"app:{action_name}_action"
-#     return None
-
-
-# def get_action_urlpatterns():
-#     """Get all registered action URL patterns."""
-#     # Evaluate all lazy URL patterns
-#     return [pattern() for pattern in _action_urlpatterns]
 
 
 def handle_action(request, pk, action):
