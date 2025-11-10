@@ -11,7 +11,7 @@
                     {% if node.item.is_container %}
                         <span class="badge bg-primary ms-2">Container</span>
                     {% endif %}
-                    <small class="text-muted ms-2">({{ node.item.barcode_string }})</small>
+                    (<code>{{ node.item.barcode_string }}</code>)
                 </div>
                 {% if node.children %}
                     {% with tree=node %}
