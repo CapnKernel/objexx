@@ -72,7 +72,7 @@
                     {% endblock nav %}
                     {% block barcode_form %}
                     <form class="d-flex me-3" method="get" action="{% url 'app:scan_redirect' %}">
-                        <input class="form-control me-2" type="text" name="barcode" placeholder="Scan barcode..."
+                        <input class="form-control me-2" type="text" name="barcode" placeholder="Scan barcode..." value="{{ barcode_value }}"
                                aria-label="Scan barcode" autofocus>
                     </form>
                     {% endblock barcode_form %}

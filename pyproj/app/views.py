@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -69,6 +70,12 @@ def scan_redirect(request):
     if Item.get_possible_item_id_from_internal_barcode(code):
         # Redirect to new item page with this ID pre-filled
         url = reverse('app:new_item', query={'barcode': code})
+        return HttpResponseRedirect(url)
+
+    # Perhaps it's a search (starts with '/')
+    if code.startswith('/'):
+        query = code[1:]  # Strip leading '/'
+        url = reverse('app:item_list') + '?' + urlencode({'q': query})
         return HttpResponseRedirect(url)
 
     # Perhaps it's an external barcode we haven't seen before for an existing item
@@ -172,9 +179,24 @@ def new_external_barcode(request):
 
 
 def item_list(request):
-    """Display a table of all items with links to details"""
+    query = request.GET.get('q', '').strip()
+
     items = Item.objects.filter(deleted=False).select_related('parent').order_by('id')
-    context = {'items': items}
+    if query:
+        filter = Q(name__icontains=query)
+        filter |= Q(description__icontains=query)
+        filter |= Q(external_barcodes__code__icontains=query)
+        items = items.filter(filter).distinct()
+
+    title = 'Search' if query else 'All Items'
+
+    context = {
+        'items': items,
+        'q': query,
+        'title': title,
+        'barcode_value': f'/{query}' if query else '',
+    }
+
     return render(request, 'app/item_list.html', context)
 
 

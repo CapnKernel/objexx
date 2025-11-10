@@ -2,7 +2,9 @@
 {% load static %}
 {% load navtag %}
 
-{% block title %}All Items - Inventory{% endblock title %}
+{% block title %}
+    {{ title }} - Inventory
+{% endblock title %}
 
 {% block nav %}
 {% nav "items" %}
@@ -13,7 +15,12 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>All Items</h2>
+            {% if q %}
+                <h2>Search</h2>
+                <p>Search Results for "{{ q }}"</p>
+            {% else %}
+                <h2>All Items</h2>
+            {% endif %}
             <span class="badge bg-primary">{{ items.count }} items</span>
         </div>
 
