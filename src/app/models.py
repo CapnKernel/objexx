@@ -88,6 +88,7 @@ class Item(models.Model):
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
+    # FIXME: Change to last_updated_at
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

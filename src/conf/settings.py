@@ -57,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'login_required.middleware.LoginRequiredMiddleware',
+    'conf.middleware.LoginRequiredExemptMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'conf.middleware.TimezoneMiddleware',
@@ -76,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'conf.context_processors.site_name',
             ],
         },
     },
@@ -109,28 +110,23 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'authuser.User'  # In code, you can get the user model with; from django.contrib.auth import get_user_model; User = get_user_model()
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/device/'
-LOGOUT_REDIRECT_URL = '/device/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
-LOGIN_REQUIRED_IGNORE_PATHS = [
-    '/office/login/',
-    '/office/logout/',
-    '/admin/',
-    '/static/',
-    '__debug__/',
-]
-
-LOGIN_REQUIRED_IGNORE_VIEW_NAMES = [
+# Views exempt from login requirement (matched by view name in urlpatterns)
+AUTH_EXEMPT_VIEW_NAMES = (
+    'admin:login',
+    'admin:logout',
     'login',
     'logout',
     ## Good source: https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
-    'password_change',
-    'password_change_done',
+    # 'password_change',
+    # 'password_change_done',
     'password_reset',
     'password_reset_done',
     'password_reset_confirm',
     'password_reset_complete',
-]
+)
 
 HIJACK_PERMISSION_CHECK = 'hijack.permissions.superusers_and_staff'
 
@@ -209,6 +205,7 @@ except ImportError:
     print('Unable to load local_settings.py')
 
 TESTING = any(word in sys.argv for word in ('test', 'pytest'))
+PASSWORD_RESET_FROM_EMAIL = EMAIL_DEFAULT_FROM
 
 if DEBUG:
     if TESTING:

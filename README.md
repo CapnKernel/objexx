@@ -39,7 +39,7 @@ There are three kinds of barcodes:
 Scan Item → View Details → Scan Action → Perform Action
 ```
 
-Objexxm maintains context between scans, allowing you to scan an item and then scan an action barcode to perform operations on that item.
+Objexx maintains context between scans, allowing you to scan an item and then scan an action barcode to perform operations on that item.
 
 #### 🔄 Container Management
 - **Tree View**: Visual hierarchy of contained items

@@ -11,6 +11,8 @@
 {{ block.super }}
 {% endblock nav %}
 
+{# FIXME: Make this page show something sensible if not logged in.  May need changes to the view. #}
+
 {% block body %}
 <div x-data="{ activeTab: 'dashboard' }">
     <!-- Dashboard Tab -->
@@ -18,7 +20,7 @@
         <div class="row">
             <div class="col-12">
                 <h2>Inventory Dashboard</h2>
-                <p class="lead">Welcome to your inventory management system.</p>
+                <p class="lead">Welcome to the inventory management system.</p>
                 <div class="row mt-4"
                      hx-get="{% url 'app:dash_stats' %}"
                      hx-trigger="load">

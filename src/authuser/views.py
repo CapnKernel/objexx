@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth.views import (
     PasswordResetCompleteView,
@@ -9,7 +10,7 @@ from django.contrib.auth.views import (
 
 # /accounts/password_reset/	authuser.views.MyPasswordResetView	password_reset
 class MyPasswordResetView(PasswordResetView):
-    from_email = 'noreply@superhouse.tv'
+    from_email = settings.PASSWORD_RESET_FROM_EMAIL
     template_name = 'registration/my_password_reset_form.html'
     email_template_name = 'registration/my_password_reset_email.html'
     subject_template_name = 'registration/my_password_reset_subject.txt'

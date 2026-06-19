@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_not_required
 from django.db import transaction
 from django.db.models import Q
 from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
@@ -16,6 +17,7 @@ from .models import ExternalBarcode, Item
 from .forms import CSVImportForm, ItemCreateForm
 
 
+#@login_not_required
 def inventory_dashboard(request):
     """Main inventory management dashboard"""
     return render(request, 'app/dash.html')
@@ -91,6 +93,7 @@ def item_action(request, pk, action_name):
     raise Http404(f"Action '{action_name}' not found")
 
 
+# FIXME: Candidates for moving to actions.py?
 def create_new_external_barcodes_for_item(item, external_barcodes_text):
     """Helper function to create ExternalBarcode objects from textarea input"""
     barcodes = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
@@ -150,8 +153,8 @@ def new_item(request):
             errors = form.errors
     else:
         # GET request - check for external barcode parameter
-        external_barcode = request.GET.get('external', '').strip()
         initial_data = {}
+        external_barcode = request.GET.get('external', '').strip()
         if external_barcode:
             initial_data['external_barcodes'] = external_barcode
 
