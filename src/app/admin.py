@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html
-from .models import Item, ExternalBarcode, ItemHistory
+
+from .models import ExternalBarcode, Item, ItemHistory
 
 
 class ExternalBarcodeInline(admin.TabularInline):
@@ -28,7 +29,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ['id', 'barcode_string', 'name', 'parent', 'deleted', 'created_at']
     list_filter = ['deleted', 'created_at']
     search_fields = ['name', 'description']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at', 'last_updated_at']
     inlines = [ExternalBarcodeInline]
 
     def save_model(self, request, obj, form, change):

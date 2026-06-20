@@ -1,10 +1,9 @@
 import re
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
-from django.conf import settings
-from django.contrib.auth import get_user_model
 
 
 class Item(models.Model):
@@ -88,8 +87,7 @@ class Item(models.Model):
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
-    # FIXME: Change to last_updated_at
-    updated_at = models.DateTimeField(auto_now=True)
+    last_updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [

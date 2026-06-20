@@ -1,7 +1,7 @@
 import csv
+import re
 from datetime import datetime, timedelta
 from io import StringIO
-import re
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
@@ -13,8 +13,8 @@ from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .models import ExternalBarcode, Item
 from .forms import CSVImportForm, ItemCreateForm
+from .models import ExternalBarcode, Item
 
 
 #@login_not_required
@@ -244,7 +244,7 @@ def item_detail(request, pk):
     """Display details for a specific item"""
     item = get_object_or_404(Item, pk=pk)
     tree_structure = item.get_contained_tree() if item.is_container else None
-    updated_when_scanned = abs(item.updated_at - item.last_scanned_at) < timedelta(seconds=1)
+    updated_when_scanned = abs(item.last_updated_at - item.last_scanned_at) < timedelta(seconds=1)
     context = {
         'item': item,
         'tree_structure': tree_structure,
