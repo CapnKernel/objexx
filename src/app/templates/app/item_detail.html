@@ -109,7 +109,7 @@
                                     </tr>
                                     <tr>
                                         <th>Last Scanned</th>
-                                        <td>{{ item.last_scanned_at }}</td>
+                                        <td>{{ item.last_scanned_at|default:"Never scanned" }}</td>
                                     </tr>
                                 {% endif %}
                                 {% if item.deleted %}
