@@ -1,10 +1,10 @@
-name: myapp
+name: objexx
 services:
-  myapp:
+  objexx:
     build: .
-    image: myapp:latest
+    image: objexx:latest
     pull_policy: build
-    container_name: myapp_web
+    container_name: objexx_web
     volumes:
       - sqlite:/data/db
       - media:/data/media
@@ -12,19 +12,19 @@ services:
       - env:/data/env
     environment:
       - DJANGO_SETTINGS_MODULE=conf.settings
-      - SITE_NAME=MyApp
-      - ALLOWED_HOSTS=myapp.afork.com,localhost
+      - SITE_NAME=Objexx
+      - ALLOWED_HOSTS=objexx.afork.com,localhost
       # For a top-level site (e.g. myapp.example.com/):
       - SCRIPT_NAME=
       # For a subpath site (e.g. myapp.example.com/myapp):
       # - SCRIPT_NAME=/myapp
-      - CSRF_TRUSTED_ORIGINS=https://myapp.afork.com
+      - CSRF_TRUSTED_ORIGINS=https://objexx.afork.com
       - EMAIL_DEFAULT_FROM=noreply@afork.com
       - EMAIL_HOST=
       - EMAIL_PORT=
       - EMAIL_HOST_USER=
       - EMAIL_HOST_PASSWORD=
-      - DBBACKUP_HOSTNAME=myapp
+      - DBBACKUP_HOSTNAME=objexx
     networks:
       - shared_docker_network
     restart: unless-stopped
@@ -32,11 +32,11 @@ services:
       - "traefik.enable=true"
       # Top-level site: Host(`myapp.afork.com`)
       # Subpath site:   Host(`vps.example.com`) && PathPrefix(`/myapp`)
-      - "traefik.http.routers.myapp.rule=Host(`myapp.afork.com`)"
-      - "traefik.http.routers.myapp.entrypoints=websecure"
-      - "traefik.http.routers.myapp.tls=true"
-      - "traefik.http.routers.myapp.tls.certresolver=letsencrypt"
-      - "traefik.http.services.myapp.loadbalancer.server.port=8000"
+      - "traefik.http.routers.objexx.rule=Host(`objexx.afork.com`)"
+      - "traefik.http.routers.objexx.entrypoints=websecure"
+      - "traefik.http.routers.objexx.tls=true"
+      - "traefik.http.routers.objexx.tls.certresolver=letsencrypt"
+      - "traefik.http.services.objexx.loadbalancer.server.port=8000"
 
 volumes:
   sqlite:
