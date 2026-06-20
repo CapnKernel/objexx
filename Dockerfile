@@ -1,3 +1,5 @@
+ARG UID=1120
+
 FROM python:3.11-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -22,7 +24,7 @@ COPY src/conf/docker_settings.py conf/local_settings.py
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
-RUN useradd -u 1120 -m user && \
+RUN id -u user 2>/dev/null || useradd ${UID:+-u ${UID}} -m user && \
     chown -R user:user /app && \
     mkdir -p /app/static /data/db /data/media /data/env /data/backups && \
     chown -R user:user /data /app/static

@@ -1,7 +1,10 @@
 name: objexx
 services:
   objexx:
-    build: .
+    build:
+      context: .
+      args:
+        UID: 1120 # Leave blank if you don't care about the uid/gid.
     image: objexx:latest
     pull_policy: build
     container_name: objexx_web
