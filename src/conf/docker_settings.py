@@ -53,7 +53,7 @@ STORAGES = dict(global_settings.STORAGES)
 STORAGES["dbbackup"] = {
     "BACKEND": "django.core.files.storage.FileSystemStorage",
     "OPTIONS": {
-        "location": str(BASE_DIR / "backups"),
+        "location": "/data/backups",
     },
 }
 
