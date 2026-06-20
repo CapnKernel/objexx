@@ -10,7 +10,9 @@
 
 import os
 from pathlib import Path
+
 import dj_database_url
+from django.conf import global_settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,13 +49,22 @@ EMAIL_DEFAULT_FROM = os.environ.get('EMAIL_DEFAULT_FROM')
 # Display name for this instance in templates. Set at deploy time.
 SITE_NAME = os.environ.get('SITE_NAME', 'App')
 
+STORAGES = dict(global_settings.STORAGES)
+STORAGES["dbbackup"] = {
+    "BACKEND": "django.core.files.storage.FileSystemStorage",
+    "OPTIONS": {
+        "location": str(BASE_DIR / "backups"),
+    },
+}
+
 # DBBACKUP_HOSTNAME identifies this instance in backup filenames.
 # Set via environment variable at deploy time (e.g. 'app2', 'app3').
-DBBACKUP_HOSTNAME = os.environ.get('DBBACKUP_HOSTNAME', 'app')
+DBBACKUP_HOSTNAME = os.environ.get('DBBACKUP_HOSTNAME', 'objexx')
 DBBACKUP_FILENAME_TEMPLATE = '{servername}-app-{datetime}.sql'
-DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location': '/data/backups'}
-DBBACKUP_CLEANUP_KEEP = 10
+DBBACKUP_CLEANUP_KEEP = 2
+DBBACKUP_CONNECTOR_MAPPING = {
+    'django.db.backends.sqlite3': 'dbbackup.db.sqlite.SqliteConnector',
+}
 
 # Proxy settings for running behind Traefik
 USE_X_FORWARDED_HOST = True

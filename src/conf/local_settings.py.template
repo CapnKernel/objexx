@@ -44,10 +44,10 @@ STORAGES["dbbackup"] = {
 DBBACKUP_HOSTNAME = 'local'
 # DBBACKUP_HOSTNAME = 'website.example.com'
 DBBACKUP_FILENAME_TEMPLATE = '{servername}-app-{datetime}.sql'
+DBBACKUP_CLEANUP_KEEP = 2
 DBBACKUP_CONNECTOR_MAPPING = {
     'django.db.backends.sqlite3': 'dbbackup.db.sqlite.SqliteConnector',
 }
-DBBACKUP_CLEANUP_KEEP = 2
 
 BARCODE_PREFIX = 'T='
 BARCODE_VERB_PREFIX = 'V='
