@@ -24,7 +24,7 @@ RUN chmod +x entrypoint.sh
 
 RUN useradd -u 1120 -m user && \
     chown -R user:user /app && \
-    mkdir -p /data/db /data/media /app/static /data/env && \
+    mkdir -p /app/static /data/db /data/media /data/env && \
     chown -R user:user /data /app/static
 USER user
 

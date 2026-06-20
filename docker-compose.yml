@@ -6,10 +6,8 @@ services:
     pull_policy: build
     container_name: objexx_web
     volumes:
-      - sqlite:/data/db
-      - media:/data/media
       - static:/app/static
-      - env:/data/env
+      - data:/data
     environment:
       - DJANGO_SETTINGS_MODULE=conf.settings
       - SITE_NAME=Objexx
@@ -39,10 +37,8 @@ services:
       - "traefik.http.services.objexx.loadbalancer.server.port=8000"
 
 volumes:
-  sqlite:
-  media:
   static:
-  env:
+  data:
 
 networks:
   shared_docker_network:
