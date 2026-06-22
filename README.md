@@ -63,7 +63,7 @@ This is a super-young project.  Features are still being added, and the UI/UX is
 ### Installation
 ```bash
 git clone https://github.com/CapnKernel/objexx.git
-cd objexx/pyproj
+cd objexx/src
 python3 -m venv env
 source env/bin/activate
 pip install --upgrade pip
@@ -120,7 +120,7 @@ Access the app at http://localhost:8000/
 ## 🏛️ Project Structure
 
 ```
-pyproj/
+src/
 ├── app/                    # Main inventory application
 │   ├── models.py          # Item, ExternalBarcode, ItemHistory models
 │   ├── views.py           # Scan handling, item management views
