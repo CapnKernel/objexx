@@ -65,10 +65,11 @@ def move(request, pk):
             return render(request, 'app/move.html', context)
 
         with transaction.atomic():
-            destination_item.last_scanned_at = src_item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
-            src_item.parent = destination_item
-
+            destination_item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
             destination_item.save()
+
+            src_item.previously_in = src_item.parent
+            src_item.parent = destination_item
             src_item.save()
 
             # FIXME: Create an ItemHistory record for the move.

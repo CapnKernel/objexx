@@ -69,6 +69,16 @@ class Item(models.Model):
         help_text="The item that this item is stored in",
     )
 
+    # Previous Location
+    previously_in = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='moved_to',
+        help_text="The container this item was previously stored in",
+    )
+
     # Barcode Printing Tracking
     barcode_printed_at = models.DateTimeField(
         null=True, blank=True, help_text="When the item's barcode label was last printed"

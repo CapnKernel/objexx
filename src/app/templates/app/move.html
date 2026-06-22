@@ -29,6 +29,12 @@
                         <p class="mb-0">
                             <strong>Current Location:</strong> {{ item.path }}
                         </p>
+                        {% if item.previously_in %}
+                            <p class="mb-0 mt-2">
+                                <strong>Previously In:</strong>
+                                <a href="{% url 'app:item_detail' pk=item.previously_in.id %}">{{ item.previously_in.path }}</a>
+                            </p>
+                        {% endif %}
                     </div>
 
                     <!-- Container options will be loaded here by HTMX -->
