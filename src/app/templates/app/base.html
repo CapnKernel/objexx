@@ -151,6 +151,13 @@
             });
         </script>
 
+       {% if css_body_background_colour %}
+            <script>document.body.style.backgroundColor = '{{ css_body_background_colour }}';</script>
+        {% endif %}
+        {% if css_body_background_image %}
+            <script>document.body.style.backgroundImage = "url('{{ css_body_background_image }}')";</script>
+        {% endif %}
+
         {% block extra_js %}
         {% endblock extra_js %}
     </body>

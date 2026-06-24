@@ -11,6 +11,11 @@ SITE_ID = 1
 DEBUG = True
 # DEBUG = False
 
+# Pick one
+DEPLOY_TYPE = "dev"
+# DEPLOY_TYPE = "test"
+# DEPLOY_TYPE = "prod"
+
 ALLOWED_HOSTS = ['*']
 # ALLOWED_HOSTS = ['192.168.100.154', 'example.org']
 

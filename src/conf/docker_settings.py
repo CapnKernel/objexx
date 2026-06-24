@@ -21,6 +21,11 @@ SITE_ID = 1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+# Pick one
+# DEPLOY_TYPE = "dev"
+# DEPLOY_TYPE = "test"
+DEPLOY_TYPE = "prod"
+
 # ALLOWED_HOSTS is set via environment variable at deploy time.
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
 
