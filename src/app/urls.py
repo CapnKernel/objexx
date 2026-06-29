@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import actions, views
 
 app_name = 'app'
@@ -7,7 +8,7 @@ urlpatterns = [
     path('', views.top, name='top'),
     path('partials/dash-stats/', views.dash_stats, name='dash_stats'),
     path('item/', views.item_list, name='item_list'),
-    path('item/<int:pk>/<slug:action>/', actions.handle_action, name='item_action'),
+    path('item/<int:pk>/<slug:action>/', actions.item_action, name='item_action'),
     path('item/<int:pk>/', views.item_detail, name='item_detail'),
     path('item/new/', views.new_item, name='new_item'),
     path('scan/', views.scan_redirect, name='scan_redirect'),

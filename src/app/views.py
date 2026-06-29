@@ -84,15 +84,6 @@ def scan_redirect(request):
     url = reverse('app:new_external_barcode', query={'barcode': code})
     return HttpResponseRedirect(url)
 
-
-def item_action(request, pk, action_name):
-    """Generic handler for item actions."""
-    action_func = _action_registry.get(action_name)
-    if action_func:
-        return action_func(request, pk)
-    raise Http404(f"Action '{action_name}' not found")
-
-
 # FIXME: Candidates for moving to actions.py?
 def create_new_external_barcodes_for_item(item, external_barcodes_text):
     """Helper function to create ExternalBarcode objects from textarea input"""

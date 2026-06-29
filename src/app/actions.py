@@ -25,7 +25,7 @@ def action(func):
     return func
 
 
-def handle_action(request, pk, action):
+def item_action(request, pk, action):
     """Handle an action for a specific item."""
     action_name = action.lower()
     action_func = _action_registry.get(action_name)
