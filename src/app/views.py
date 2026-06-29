@@ -18,9 +18,9 @@ from .models import ExternalBarcode, Item
 
 
 #@login_not_required
-def inventory_dashboard(request):
+def top(request):
     """Main inventory management dashboard"""
-    return render(request, 'app/dash.html')
+    return render(request, 'app/top.html')
 
 
 def dash_stats(request):
@@ -29,7 +29,7 @@ def dash_stats(request):
     # Count containers (items that have children)
     container_count = Item.objects.filter(deleted=False, children__isnull=False).distinct().count()
     context = {'total_items': total_items, 'container_count': container_count}
-    return render(request, 'app/dash.html#dash-stats-cards', context)
+    return render(request, 'app/top.html#dash-stats-cards', context)
 
 
 def scan_redirect(request):

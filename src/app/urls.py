@@ -4,7 +4,7 @@ from . import actions, views
 app_name = 'app'
 
 urlpatterns = [
-    path('', views.inventory_dashboard, name='dash'),
+    path('', views.top, name='top'),
     path('partials/dash-stats/', views.dash_stats, name='dash_stats'),
     path('item/', views.item_list, name='item_list'),
     path('item/<int:pk>/<slug:action>/', actions.handle_action, name='item_action'),
