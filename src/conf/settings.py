@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     'django_navtag',
     # See end of this file for debug tools
     # Apps in this project
-    'authuser',
     'app',
+    'authuser', # Authuser must come last so `extends "base.html"` picks up app base.
 ]
 
 MIDDLEWARE = [
