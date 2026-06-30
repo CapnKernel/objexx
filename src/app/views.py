@@ -185,7 +185,10 @@ def new_external_barcode(request):
             possible_new_id = Item.get_possible_item_id_from_internal_barcode(item_barcode)
             if possible_new_id:
                 # Redirect to new_item with both barcode and external parameters
-                url = reverse('app:new_item', query={'barcode': item_barcode, 'external': external_barcode_str})
+                url = reverse(
+                    'app:new_item',
+                    query={'barcode': item_barcode, 'external': external_barcode_str},
+                )
                 return HttpResponseRedirect(url)
             return HttpResponseBadRequest('Item not found')
 
@@ -234,10 +237,9 @@ def item_detail(request, pk):
     """Display details for a specific item"""
     item = get_object_or_404(Item, pk=pk)
     tree_structure = item.get_contained_tree() if item.is_container else None
-    updated_when_scanned = (
-        item.last_scanned_at is not None
-        and abs(item.last_updated_at - item.last_scanned_at) < timedelta(seconds=1)
-    )
+    updated_when_scanned = item.last_scanned_at is not None and abs(
+        item.last_updated_at - item.last_scanned_at
+    ) < timedelta(seconds=1)
     context = {
         'item': item,
         'tree_structure': tree_structure,
@@ -268,7 +270,8 @@ def import_items(request):
                 actual_headers = set(reader.fieldnames)
                 if not expected_headers.issubset(actual_headers):
                     form.add_error(
-                        'csv_data', f"Missing required headers: {', '.join(expected_headers - actual_headers)}"
+                        'csv_data',
+                        f'Missing required headers: {", ".join(expected_headers - actual_headers)}',
                     )
                     return render(request, 'app/import.html', {'form': form})
 
@@ -285,7 +288,12 @@ def import_items(request):
                     for i, row in enumerate(reader):
                         n = i + 2  # Account for header row
                         # Map CSV fields to model fields
-                        mapper = {'ID': 'id', 'Name': 'name', 'Desc': 'description', 'In': 'parent_id'}
+                        mapper = {
+                            'ID': 'id',
+                            'Name': 'name',
+                            'Desc': 'description',
+                            'In': 'parent_id',
+                        }
                         print(f'{row=}')
 
                         data = {v: (row[k] if row[k] else '').strip() for k, v in mapper.items()}

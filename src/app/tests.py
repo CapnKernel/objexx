@@ -17,9 +17,7 @@ def test_top_anonymous(client):
 
 def test_top_authenticated(client, django_user_model):
     """Top page shows different content for authenticated users."""
-    django_user_model.objects.create_user(
-        email='test@example.com', password='secret123'
-    )
+    django_user_model.objects.create_user(email='test@example.com', password='secret123')
     client.login(email='test@example.com', password='secret123')
     response = client.get(reverse('top'))
     assert response.status_code == 200
@@ -43,9 +41,7 @@ def test_admin_redirects_anonymous(client, db):
 
 def test_admin_denies_unauthorised(client, django_user_model):
     """Non-staff users get a 302 (redirect to admin login then 200)."""
-    django_user_model.objects.create_user(
-        email='user@example.com', password='secret123'
-    )
+    django_user_model.objects.create_user(email='user@example.com', password='secret123')
     client.login(email='user@example.com', password='secret123')
     response = client.get('/office/', follow=True)
     # Django admin returns 200 with "You are not staff" message
@@ -76,9 +72,7 @@ def test_password_reset_done_anonymous(client):
 
 def test_logout_requires_post(client, django_user_model):
     """Logout via GET should not work (requires POST)."""
-    django_user_model.objects.create_user(
-        email='test@example.com', password='secret123'
-    )
+    django_user_model.objects.create_user(email='test@example.com', password='secret123')
     client.login(email='test@example.com', password='secret123')
     response = client.get(reverse('logout'))
     # GET on logout should return a method-not-allowed or similar
@@ -87,9 +81,7 @@ def test_logout_requires_post(client, django_user_model):
 
 def test_logout_success(client, django_user_model):
     """Logout via POST logs the user out."""
-    django_user_model.objects.create_user(
-        email='test@example.com', password='secret123'
-    )
+    django_user_model.objects.create_user(email='test@example.com', password='secret123')
     client.login(email='test@example.com', password='secret123')
     response = client.post(reverse('logout'), follow=True)
     assertRedirects(response, reverse('top'))
