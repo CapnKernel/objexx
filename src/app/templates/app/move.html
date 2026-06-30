@@ -48,15 +48,14 @@
                               action="{% url 'app:item_action' action='move' pk=item.pk %}">
                             {% csrf_token %}
                             <div class="mb-3">
-                                <label for="barcode" class="form-label">Scan destination barcode):</label>
+                                <label for="barcode" class="form-label">Scan destination barcode:</label>
                                 <input type="text"
                                        class="form-control"
                                        id="barcode"
                                        name="barcode"
-                                       placeholder="Scan destination barcode..."
+                                       placeholder="Destination barcode..."
                                        aria-label="Scan destination barcode"
-                                       autofocus
-                                       hx-on:keyup="if (event.key === 'Enter') { this.form.submit(); }">
+                                       autofocus>
                                 <div class="form-text">Enter the barcode of the destination item or container, then press Enter to move</div>
                             </div>
                         </form>
