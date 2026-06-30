@@ -203,9 +203,12 @@ def new_external_barcode(request):
     if match:
         lcsc = match.group(1)  # Extract LCSC part
 
+    back_url = request.META.get('HTTP_REFERER', reverse('app:top'))
+
     context = {
         'lcsc': lcsc,
         'barcode': external_barcode_str,
+        'back_url': back_url,
     }
 
     return render(request, 'app/new_external_barcode.html', context)
