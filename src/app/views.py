@@ -37,7 +37,7 @@ def scan_redirect(request):
 
     # If q is empty or missing, return 404
     if not code:
-        raise Http404("No barcode provided")
+        raise Http404('No barcode provided')
 
     if item := Item.from_any_barcode(code):
         # If either way we found an item, update last_scanned_at and
@@ -51,7 +51,7 @@ def scan_redirect(request):
         return redirect(item)
 
     # So we don't have an item.  Check if this is an action barcode (e.g., V=AUDIT)
-    action_match = re.match(f"^{re.escape(settings.BARCODE_VERB_PREFIX)}(.+)$", code)
+    action_match = re.match(f'^{re.escape(settings.BARCODE_VERB_PREFIX)}(.+)$', code)
     if action_match:
         action_name = action_match.group(1).lower()
         id_of_last_scanned_item = request.session.get('last_scanned_item_id')
@@ -104,13 +104,13 @@ def new_item(request):
     """Display a form for creating a new item with a given internal barcode"""
     barcode = request.GET.get('barcode', '').strip()
     if not barcode:
-        return HttpResponseBadRequest("Internal barcode for item is required")
+        return HttpResponseBadRequest('Internal barcode for item is required')
     possible_new_id = Item.get_possible_item_id_from_internal_barcode(barcode)
     if not possible_new_id:
-        return HttpResponseBadRequest("Internal barcode for item is not in required format")
+        return HttpResponseBadRequest('Internal barcode for item is not in required format')
     item = Item.from_barcode(barcode)
     if item:
-        return HttpResponseBadRequest("Item already exists")
+        return HttpResponseBadRequest('Item already exists')
 
     errors = None
 
@@ -172,12 +172,12 @@ def new_external_barcode(request):
     """Display a form for creating a new item with an external barcode"""
     external_barcode_str = request.GET.get('barcode', '').strip()
     if not external_barcode_str:
-        return HttpResponseBadRequest("External barcode is required")
+        return HttpResponseBadRequest('External barcode is required')
 
     if request.method == 'POST':
         item_barcode = request.POST.get('item_barcode', '').strip()
         if not item_barcode:
-            return HttpResponseBadRequest("Item barcode is required")
+            return HttpResponseBadRequest('Item barcode is required')
         # Check if item with this barcode already exists
         item = Item.from_barcode(item_barcode)
         if not item:
@@ -187,7 +187,7 @@ def new_external_barcode(request):
                 # Redirect to new_item with both barcode and external parameters
                 url = reverse('app:new_item', query={'barcode': item_barcode, 'external': external_barcode_str})
                 return HttpResponseRedirect(url)
-            return HttpResponseBadRequest("Item not found")
+            return HttpResponseBadRequest('Item not found')
 
         create_new_external_barcodes_for_item(item, external_barcode_str)
         item.last_scanned_at = timezone.now()
@@ -358,7 +358,7 @@ def import_items(request):
                 return render(request, 'app/import.html', ctx)
 
             except Exception as e:
-                form.add_error('csv_data', f"Error parsing CSV: {e}")
+                form.add_error('csv_data', f'Error parsing CSV: {e}')
                 return render(request, 'app/import.html', ctx)
 
         # Form is invalid

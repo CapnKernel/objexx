@@ -19,9 +19,9 @@ class ExternalBarcodeInline(admin.TabularInline):
         if obj.pk:
             url = reverse('admin:app_externalbarcode_change', args=[obj.pk])
             return format_html('<a href="{}">Edit</a>', url)
-        return "-"
+        return '-'
 
-    admin_link.short_description = "Admin"
+    admin_link.short_description = 'Admin'
 
 
 @admin.register(Item)

@@ -61,7 +61,7 @@ def move(request, pk):
 
         # Check if moving would create a cycle
         if src_item.is_ancestor_of(destination_item):
-            context['error'] = f"Cannot move item into its own descendant: {destination_item.path}"
+            context['error'] = f'Cannot move item into its own descendant: {destination_item.path}'
             return render(request, 'app/move.html', context)
 
         with transaction.atomic():
@@ -118,22 +118,23 @@ def move_container_options(request, pk):
 @action
 def delete(request, pk):
     """A placeholder view for deleting items."""
-    return HttpResponse(f"Delete action executed for item {pk}")
+    return HttpResponse(f'Delete action executed for item {pk}')
 
 
 @action
 def audit(request, pk):
     """A placeholder view for auditing items."""
-    return HttpResponse(f"Audit action executed for item {pk}")
+    # FIXME
+    return HttpResponse(f'Audit action executed for item {pk}')
 
 
 @action
 def bulk_move(request, pk):
     """A placeholder view for bulk moving items."""
-    return HttpResponse(f"Bulk move action executed for item {pk}")
+    return HttpResponse(f'Bulk move action executed for item {pk}')
 
 
 @action
 def queue_print(request, pk):
     """A placeholder view for queuing print jobs."""
-    return HttpResponse(f"Print job queued for item {pk}")
+    return HttpResponse(f'Print job queued for item {pk}')

@@ -38,7 +38,7 @@ def test_favicon_anonymous(client):
 def test_admin_redirects_anonymous(client, db):
     """Admin requires authentication; anonymous users get redirected."""
     response = client.get('/office/')
-    assertRedirects(response, f"{reverse('admin:login')}?next={reverse('admin:index')}")
+    assertRedirects(response, f'{reverse("admin:login")}?next={reverse("admin:index")}')
 
 
 def test_admin_denies_unauthorised(client, django_user_model):
