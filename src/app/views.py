@@ -3,7 +3,6 @@ import re
 from datetime import datetime, timedelta
 from io import StringIO
 from urllib.parse import urlencode
-from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_not_required
@@ -12,6 +11,7 @@ from django.db.models import Q
 from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
 from .forms import CSVImportForm, ItemCreateForm
 from .models import ExternalBarcode, Item
@@ -40,9 +40,9 @@ def scan_redirect(request):
         raise Http404("No barcode provided")
 
     if item := Item.from_any_barcode(code):
-        # If either way we found an item, redirect to its detail page
-        # Update last_scanned_at timestamp with UTC datetime
-        item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
+        # If either way we found an item, update last_scanned_at and
+        # redirect to its detail page
+        item.last_scanned_at = timezone.now()
         item.save()
         # Store the scanned item ID in session for action views
         # FIXME: Ditch use of session by modifying the scan barcode text input form to have a hidden field
@@ -120,7 +120,7 @@ def new_item(request):
         if form.is_valid():
             with transaction.atomic():
                 item = form.save(commit=False)
-                item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
+                item.last_scanned_at = timezone.now()
                 # Here's where we patch in the id so it doesn't have an existing one
                 item.pk = possible_new_id
                 item.save()
@@ -190,7 +190,7 @@ def new_external_barcode(request):
             return HttpResponseBadRequest("Item not found")
 
         create_new_external_barcodes_for_item(item, external_barcode_str)
-        item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
+        item.last_scanned_at = timezone.now()
         item.save()
 
         return redirect(item)

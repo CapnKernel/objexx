@@ -1,12 +1,12 @@
 import re
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path, reverse  # , Resolver404, get_resolver
+from django.utils import timezone
 
 from .models import Item
 
@@ -65,7 +65,7 @@ def move(request, pk):
             return render(request, 'app/move.html', context)
 
         with transaction.atomic():
-            destination_item.last_scanned_at = datetime.now(ZoneInfo('UTC'))
+            destination_item.last_scanned_at = timezone.now()
             destination_item.save()
 
             src_item.previously_in = src_item.parent
