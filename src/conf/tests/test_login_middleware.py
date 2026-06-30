@@ -1,8 +1,9 @@
+from urllib.parse import urlencode
+
 import pytest
 from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
-
 from pytest_django.asserts import assertRedirects
 
 
@@ -21,7 +22,10 @@ class TestLoginRequiredExemptMiddleware:
         """A non-exempt view redirects unauthenticated users to admin's LOGIN_URL."""
         admin_index = reverse('admin:index')
         response = client.get(admin_index)
-        assertRedirects(response, f"{reverse('admin:login')}?next={admin_index}")
+        assertRedirects(
+            response,
+            f'{reverse("admin:login")}?{urlencode({"next": reverse("admin:index")})}',
+        )
 
     def test_authenticated_user_can_access_any_view(self, client, db, django_user_model):
         """An authenticated user can access any view, exempt or not."""

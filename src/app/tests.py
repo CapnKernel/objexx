@@ -36,7 +36,7 @@ def test_favicon_anonymous(client):
 def test_admin_redirects_anonymous(client, db):
     """Admin requires authentication; anonymous users get redirected."""
     response = client.get('/office/')
-    assertRedirects(response, f'{reverse("admin:login")}?next={reverse("admin:index")}')
+    assertRedirects(response, f'{reverse("admin:login")}?{urlencode({"next": reverse("admin:index")})}')
 
 
 def test_admin_denies_unauthorised(client, django_user_model):
@@ -84,6 +84,7 @@ def test_logout_success(client, django_user_model):
     django_user_model.objects.create_user(email='test@example.com', password='secret123')
     client.login(email='test@example.com', password='secret123')
     response = client.post(reverse('logout'), follow=True)
-    assertRedirects(response, reverse('top'))
+    top = reverse('app:top')
+    assertRedirects(response, f'{reverse("login")}?{urlencode({"next": top})}')
     # After logout, the top page should show the login link again
     assert b'Log in' in response.content
