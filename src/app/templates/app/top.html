@@ -21,37 +21,41 @@
             <div class="col-12">
                 <h2>Inventory Dashboard</h2>
                 <p class="lead">Welcome to the inventory management system.</p>
-                <div class="row mt-4"
-                     hx-get="{% url 'app:dash_stats' %}"
-                     hx-trigger="load">
-                    {% partialdef dash-stats-cards %}
-                        <div class="col-md-4">
-                            <div class="card text-center inventory-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Items</h5>
-                                    <p class="card-text display-6">{{ total_items }}</p>
+                {% if user.is_authenticated %}
+                    <div class="row mt-4"
+                        hx-get="{% url 'app:dash_stats' %}"
+                        hx-trigger="load">
+                        {% partialdef dash-stats-cards %}
+                            <div class="col-md-4">
+                                <div class="card text-center inventory-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Items</h5>
+                                        <p class="card-text display-6">{{ total_items }}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-center inventory-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Containers</h5>
-                                    <p class="card-text display-6">{{ container_count }}</p>
+                            <div class="col-md-4">
+                                <div class="card text-center inventory-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Containers</h5>
+                                        <p class="card-text display-6">{{ container_count }}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-center inventory-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Recent Activity</h5>
-                                    <p class="card-text display-6">0</p>
+                            <div class="col-md-4">
+                                <div class="card text-center inventory-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Recent Activity</h5>
+                                        <p class="card-text display-6">0</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endpartialdef dash-stats-cards %}
-                    {% partial dash-stats-cards %}
-                </div>
+                        {% endpartialdef dash-stats-cards %}
+                        {% partial dash-stats-cards %}
+                    </div>
+                {% else %}
+                    <p>You should go log in.</p> {# Won't be shown, because will have already redirected. #}
+                {% endif %}
             </div>
         </div>
     </div>

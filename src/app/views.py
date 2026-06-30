@@ -17,7 +17,6 @@ from .forms import CSVImportForm, ItemCreateForm
 from .models import ExternalBarcode, Item
 
 
-#@login_not_required
 def top(request):
     """Main inventory management dashboard"""
     return render(request, 'app/top.html')
