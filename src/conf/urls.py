@@ -29,7 +29,11 @@ from conf.xaccel import serve_protected_media
 urlpatterns = [
     path('office/', admin.site.urls),
     path('accounts/', include('authuser.urls')),
-    path('favicon.ico', method_decorator(login_not_required)(RedirectView.as_view(url=static('favicon.ico'), permanent=True)), name='favicon'),
+    path(
+        'favicon.ico',
+        method_decorator(login_not_required)(RedirectView.as_view(url=static('favicon.ico'), permanent=True)),
+        name='favicon',
+    ),
     # app handles top-level
     path('', include('app.urls')),
 ]
@@ -38,8 +42,8 @@ if settings.DEBUG:
     urlpatterns += [
         # If we're running behind a web server, we won't see media requests,
         # so this will do nothing.  Kept for local development.
-        path('media/<path:path>', serve, {"document_root": settings.MEDIA_ROOT}),
-        path("__debug__/", include("debug_toolbar.urls")),
+        path('media/<path:path>', serve, {'document_root': settings.MEDIA_ROOT}),
+        path('__debug__/', include('debug_toolbar.urls')),
     ]
 else:
     # Media files: in production, served via X-Sendfile through uWSGI

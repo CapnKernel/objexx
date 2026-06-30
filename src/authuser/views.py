@@ -18,14 +18,14 @@ class MyPasswordResetView(PasswordResetView):
 
 # /accounts/password_reset/done/	django.contrib.auth.views.MyPasswordResetDoneView	password_reset_done
 class MyPasswordResetDoneView(PasswordResetDoneView):
-    template_name = "registration/my_password_reset_done.html"
+    template_name = 'registration/my_password_reset_done.html'
 
 
 # /accounts/reset/<uidb64>/<token>/	django.contrib.auth.views.MyPasswordResetConfirmView	password_reset_confirm
 class MyPasswordResetConfirmView(PasswordResetConfirmView):
-    template_name = "registration/my_password_reset_confirm.html"
+    template_name = 'registration/my_password_reset_confirm.html'
 
 
 # /accounts/reset/done/	django.contrib.auth.views.MyPasswordResetCompleteView	password_reset_complete
 class MyPasswordResetCompleteView(PasswordResetCompleteView):
-    template_name = "registration/my_password_reset_complete.html"
+    template_name = 'registration/my_password_reset_complete.html'

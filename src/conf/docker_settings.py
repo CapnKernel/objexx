@@ -24,7 +24,7 @@ DEBUG = False
 # Pick one
 # DEPLOY_TYPE = "dev"
 # DEPLOY_TYPE = "test"
-DEPLOY_TYPE = "prod"
+DEPLOY_TYPE = 'prod'
 
 # ALLOWED_HOSTS is set via environment variable at deploy time.
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
@@ -48,17 +48,17 @@ STATIC_URL = f'{SCRIPT_NAME}/static/'
 MEDIA_ROOT = '/data/media/'
 MEDIA_URL = f'{SCRIPT_NAME}/media/'
 
-ADMINS = [("Mitch Davis", "mjd@afork.com")]
+ADMINS = [('Mitch Davis', 'mjd@afork.com')]
 EMAIL_DEFAULT_FROM = os.environ.get('EMAIL_DEFAULT_FROM')
 
 # Display name for this instance in templates. Set at deploy time.
 SITE_NAME = os.environ.get('SITE_NAME', 'App')
 
 STORAGES = dict(global_settings.STORAGES)
-STORAGES["dbbackup"] = {
-    "BACKEND": "django.core.files.storage.FileSystemStorage",
-    "OPTIONS": {
-        "location": "/data/backups",
+STORAGES['dbbackup'] = {
+    'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    'OPTIONS': {
+        'location': '/data/backups',
     },
 }
 

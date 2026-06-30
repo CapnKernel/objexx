@@ -21,7 +21,7 @@ def serve_protected_media(request, file_path):
     django.views.static.serve so no uWSGI file serving is required.
     """
     if not request.user.is_authenticated:
-        return HttpResponseForbidden("Authentication required")
+        return HttpResponseForbidden('Authentication required')
 
     if settings.DEBUG:
         # Local development: serve directly via Django
@@ -29,6 +29,6 @@ def serve_protected_media(request, file_path):
 
     # Production: return X-Sendfile for uWSGI to serve via sendfile()
     response = HttpResponse()
-    response["X-Sendfile"] = os.path.join(settings.MEDIA_ROOT, file_path)
-    response["Content-Type"] = ""
+    response['X-Sendfile'] = os.path.join(settings.MEDIA_ROOT, file_path)
+    response['Content-Type'] = ''
     return response

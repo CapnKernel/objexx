@@ -5,22 +5,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ("app", "0003_rename_updated_at_item_last_updated_at"),
+        ('app', '0003_rename_updated_at_item_last_updated_at'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="item",
-            name="previously_in",
+            model_name='item',
+            name='previously_in',
             field=models.ForeignKey(
                 blank=True,
-                help_text="The container this item was previously stored in",
+                help_text='The container this item was previously stored in',
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
-                related_name="moved_to",
-                to="app.item",
+                related_name='moved_to',
+                to='app.item',
             ),
         ),
     ]

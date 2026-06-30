@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,31 +14,27 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="Item",
+            name='Item',
             fields=[
                 (
-                    "id",
+                    'id',
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name="ID",
+                        verbose_name='ID',
                     ),
                 ),
                 (
-                    "name",
-                    models.CharField(
-                        help_text="Common name for the item", max_length=255
-                    ),
+                    'name',
+                    models.CharField(help_text='Common name for the item', max_length=255),
                 ),
                 (
-                    "description",
-                    models.TextField(
-                        blank=True, help_text="Additional details about the item"
-                    ),
+                    'description',
+                    models.TextField(blank=True, help_text='Additional details about the item'),
                 ),
                 (
-                    "barcode_printed_at",
+                    'barcode_printed_at',
                     models.DateTimeField(
                         blank=True,
                         help_text="When the item's barcode label was last printed",
@@ -47,7 +42,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "contents_printed_at",
+                    'contents_printed_at',
                     models.DateTimeField(
                         blank=True,
                         help_text="When the container's contents list was last printed (containers only)",
@@ -55,144 +50,136 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "deleted",
-                    models.BooleanField(
-                        default=False, help_text="Whether this item has been deleted"
-                    ),
+                    'deleted',
+                    models.BooleanField(default=False, help_text='Whether this item has been deleted'),
                 ),
                 (
-                    "deleted_at",
-                    models.DateTimeField(
-                        blank=True, help_text="When this item was deleted", null=True
-                    ),
+                    'deleted_at',
+                    models.DateTimeField(blank=True, help_text='When this item was deleted', null=True),
                 ),
                 (
-                    "deletion_reason",
+                    'deletion_reason',
                     models.TextField(
                         blank=True,
-                        help_text="Reason for deletion (broken, consumed, etc.)",
+                        help_text='Reason for deletion (broken, consumed, etc.)',
                     ),
                 ),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("updated_at", models.DateTimeField(auto_now=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
                 (
-                    "parent",
+                    'parent',
                     models.ForeignKey(
                         blank=True,
-                        help_text="The item that this item is stored in",
+                        help_text='The item that this item is stored in',
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="children",
-                        to="app.item",
+                        related_name='children',
+                        to='app.item',
                     ),
                 ),
             ],
         ),
         migrations.CreateModel(
-            name="ExternalBarcode",
+            name='ExternalBarcode',
             fields=[
                 (
-                    "id",
+                    'id',
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name="ID",
+                        verbose_name='ID',
                     ),
                 ),
                 (
-                    "code",
-                    models.CharField(
-                        help_text="The external barcode value", max_length=255
-                    ),
+                    'code',
+                    models.CharField(help_text='The external barcode value', max_length=255),
                 ),
                 (
-                    "barcode_type",
+                    'barcode_type',
                     models.CharField(
                         choices=[
-                            ("UPC", "Manufacturer UPC"),
-                            ("ORDER", "Purchase Order"),
-                            ("SERIAL", "Serial Number"),
-                            ("DISTRIBUTOR", "Distributor Part Number"),
-                            ("SHIPPING", "Shipping Barcode"),
-                            ("OTHER", "Other"),
+                            ('UPC', 'Manufacturer UPC'),
+                            ('ORDER', 'Purchase Order'),
+                            ('SERIAL', 'Serial Number'),
+                            ('DISTRIBUTOR', 'Distributor Part Number'),
+                            ('SHIPPING', 'Shipping Barcode'),
+                            ('OTHER', 'Other'),
                         ],
-                        default="UPC",
-                        help_text="Type of external barcode",
+                        default='UPC',
+                        help_text='Type of external barcode',
                         max_length=50,
                     ),
                 ),
                 (
-                    "notes",
+                    'notes',
                     models.TextField(
                         blank=True,
-                        help_text="Additional context for this barcode association",
+                        help_text='Additional context for this barcode association',
                     ),
                 ),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
                 (
-                    "item",
+                    'item',
                     models.ForeignKey(
-                        help_text="The item this barcode is associated with",
+                        help_text='The item this barcode is associated with',
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="external_barcodes",
-                        to="app.item",
+                        related_name='external_barcodes',
+                        to='app.item',
                     ),
                 ),
             ],
         ),
         migrations.CreateModel(
-            name="ItemHistory",
+            name='ItemHistory',
             fields=[
                 (
-                    "id",
+                    'id',
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name="ID",
+                        verbose_name='ID',
                     ),
                 ),
                 (
-                    "action",
+                    'action',
                     models.CharField(
                         choices=[
-                            ("MOVED", "Moved"),
-                            ("CREATED", "Created"),
-                            ("DELETED", "Deleted"),
-                            ("MERGED", "Merged"),
-                            ("SPLIT", "Split"),
-                            ("CLONED", "Cloned"),
-                            ("UPDATED", "Updated"),
+                            ('MOVED', 'Moved'),
+                            ('CREATED', 'Created'),
+                            ('DELETED', 'Deleted'),
+                            ('MERGED', 'Merged'),
+                            ('SPLIT', 'Split'),
+                            ('CLONED', 'Cloned'),
+                            ('UPDATED', 'Updated'),
                         ],
                         max_length=20,
                     ),
                 ),
                 (
-                    "description",
-                    models.TextField(
-                        help_text="Human-readable description of what changed"
-                    ),
+                    'description',
+                    models.TextField(help_text='Human-readable description of what changed'),
                 ),
-                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ('timestamp', models.DateTimeField(auto_now_add=True)),
                 (
-                    "metadata",
+                    'metadata',
                     models.JSONField(
                         blank=True,
                         default=dict,
-                        help_text="Additional structured data about the change",
+                        help_text='Additional structured data about the change',
                     ),
                 ),
                 (
-                    "item",
+                    'item',
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="history_entries",
-                        to="app.item",
+                        related_name='history_entries',
+                        to='app.item',
                     ),
                 ),
                 (
-                    "user",
+                    'user',
                     models.ForeignKey(
                         blank=True,
                         null=True,
@@ -202,51 +189,39 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "ordering": ["-timestamp"],
+                'ordering': ['-timestamp'],
             },
         ),
         migrations.AddIndex(
-            model_name="item",
-            index=models.Index(
-                fields=["deleted", "parent"], name="app_item_deleted_78c334_idx"
-            ),
+            model_name='item',
+            index=models.Index(fields=['deleted', 'parent'], name='app_item_deleted_78c334_idx'),
         ),
         migrations.AddIndex(
-            model_name="item",
-            index=models.Index(
-                fields=["barcode_printed_at"], name="app_item_barcode_366b33_idx"
-            ),
+            model_name='item',
+            index=models.Index(fields=['barcode_printed_at'], name='app_item_barcode_366b33_idx'),
         ),
         migrations.AddIndex(
-            model_name="item",
-            index=models.Index(
-                fields=["contents_printed_at"], name="app_item_content_532e38_idx"
-            ),
+            model_name='item',
+            index=models.Index(fields=['contents_printed_at'], name='app_item_content_532e38_idx'),
         ),
         migrations.AddIndex(
-            model_name="externalbarcode",
-            index=models.Index(fields=["code"], name="app_externa_code_c5ca8a_idx"),
+            model_name='externalbarcode',
+            index=models.Index(fields=['code'], name='app_externa_code_c5ca8a_idx'),
         ),
         migrations.AddIndex(
-            model_name="externalbarcode",
-            index=models.Index(
-                fields=["barcode_type"], name="app_externa_barcode_486552_idx"
-            ),
+            model_name='externalbarcode',
+            index=models.Index(fields=['barcode_type'], name='app_externa_barcode_486552_idx'),
         ),
         migrations.AlterUniqueTogether(
-            name="externalbarcode",
-            unique_together={("code", "item")},
+            name='externalbarcode',
+            unique_together={('code', 'item')},
         ),
         migrations.AddIndex(
-            model_name="itemhistory",
-            index=models.Index(
-                fields=["item", "timestamp"], name="app_itemhis_item_id_449180_idx"
-            ),
+            model_name='itemhistory',
+            index=models.Index(fields=['item', 'timestamp'], name='app_itemhis_item_id_449180_idx'),
         ),
         migrations.AddIndex(
-            model_name="itemhistory",
-            index=models.Index(
-                fields=["action", "timestamp"], name="app_itemhis_action_c69858_idx"
-            ),
+            model_name='itemhistory',
+            index=models.Index(fields=['action', 'timestamp'], name='app_itemhis_action_c69858_idx'),
         ),
     ]

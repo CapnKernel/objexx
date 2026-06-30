@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # Application definition
 
@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     # See end of this file for debug tools
     # Apps in this project
     'app',
-    'authuser', # Authuser must come last so `extends "base.html"` picks up app base.
+    'authuser',  # Authuser must come last so `extends "base.html"` picks up app base.
 ]
 
 MIDDLEWARE = [
@@ -154,7 +154,7 @@ MESSAGE_TAGS = {
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / 'static',
     # "/var/www/static/",
 ]
 
@@ -166,27 +166,27 @@ MEDIA_URL = 'media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
     },
-    "loggers": {
-        "django.request": {
-            "handlers": ["console"],
-            "level": "ERROR",
-            "propagate": False,
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
         },
-        "django.db.backends": {
-            "handlers": ["console"],
-            "level": "INFO", # DEBUG if you need to see what's happening with the db.
-            "propagate": False,
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'INFO',  # DEBUG if you need to see what's happening with the db.
+            'propagate': False,
         },
     },
 }

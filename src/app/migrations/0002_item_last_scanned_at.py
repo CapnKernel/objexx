@@ -4,17 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ("app", "0001_initial"),
+        ('app', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="item",
-            name="last_scanned_at",
-            field=models.DateTimeField(
-                blank=True, help_text="When this item was last scanned", null=True
-            ),
+            model_name='item',
+            name='last_scanned_at',
+            field=models.DateTimeField(blank=True, help_text='When this item was last scanned', null=True),
         ),
     ]

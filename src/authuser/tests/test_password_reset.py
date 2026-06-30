@@ -46,4 +46,3 @@ def test_password_reset(client, db, mailoutbox):  # , create_users_and_user_data
     # FIXME: Need to test these get used
     #     email_template_name = 'registration/my_password_reset_email.html'
     #     subject_template_name = 'registration/my_password_reset_subject.txt'
-

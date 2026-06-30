@@ -28,7 +28,7 @@ class LoginRequiredExemptMiddleware(LoginRequiredMiddleware):
         if request.user.is_authenticated:
             return None
 
-        exempt_names = getattr(settings, "AUTH_EXEMPT_VIEW_NAMES", ())
+        exempt_names = getattr(settings, 'AUTH_EXEMPT_VIEW_NAMES', ())
         resolver_match = request.resolver_match
         if resolver_match and resolver_match.view_name in exempt_names:
             return None

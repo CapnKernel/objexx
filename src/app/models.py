@@ -18,7 +18,7 @@ class Item(models.Model):
         Attempt to find an Item from an internal barcode string.
         Returns the Item if found, None otherwise.
         """
-        match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", barcode_string)
+        match = re.match(f'^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$', barcode_string)
         if match:
             try:
                 return Item.objects.get(id=match.group(1), deleted=False)
@@ -29,7 +29,7 @@ class Item(models.Model):
 
     @staticmethod
     def get_possible_item_id_from_internal_barcode(barcode_string):
-        match = re.match(f"^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$", barcode_string)
+        match = re.match(f'^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$', barcode_string)
         if match:
             return match.group(1)
         return None
@@ -55,8 +55,8 @@ class Item(models.Model):
 
         return None
 
-    name = models.CharField(max_length=255, help_text="Common name for the item")
-    description = models.TextField(blank=True, help_text="Additional details about the item")
+    name = models.CharField(max_length=255, help_text='Common name for the item')
+    description = models.TextField(blank=True, help_text='Additional details about the item')
 
     # Recursive Relationship for Containment
     # Null parent means the item is not contained within another item, ie, a root item such as a shed
@@ -66,7 +66,7 @@ class Item(models.Model):
         null=True,
         blank=True,
         related_name='children',
-        help_text="The item that this item is stored in",
+        help_text='The item that this item is stored in',
     )
 
     # Previous Location
@@ -76,7 +76,7 @@ class Item(models.Model):
         null=True,
         blank=True,
         related_name='moved_to',
-        help_text="The container this item was previously stored in",
+        help_text='The container this item was previously stored in',
     )
 
     # Barcode Printing Tracking
@@ -88,12 +88,12 @@ class Item(models.Model):
     )
 
     # Scanning Tracking
-    last_scanned_at = models.DateTimeField(null=True, blank=True, help_text="When this item was last scanned")
+    last_scanned_at = models.DateTimeField(null=True, blank=True, help_text='When this item was last scanned')
 
     # Soft Deletion
-    deleted = models.BooleanField(default=False, help_text="Whether this item has been deleted")
-    deleted_at = models.DateTimeField(null=True, blank=True, help_text="When this item was deleted")
-    deletion_reason = models.TextField(blank=True, help_text="Reason for deletion (broken, consumed, etc.)")
+    deleted = models.BooleanField(default=False, help_text='Whether this item has been deleted')
+    deleted_at = models.DateTimeField(null=True, blank=True, help_text='When this item was deleted')
+    deletion_reason = models.TextField(blank=True, help_text='Reason for deletion (broken, consumed, etc.)')
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -107,8 +107,8 @@ class Item(models.Model):
         ]
 
     def __str__(self):
-        status = " [DELETED]" if self.deleted else ""
-        return f"{self.name} ({self.barcode_string}){status}"
+        status = ' [DELETED]' if self.deleted else ''
+        return f'{self.name} ({self.barcode_string}){status}'
 
     @property
     def is_container(self):
@@ -133,24 +133,24 @@ class Item(models.Model):
         while current and not current.deleted:
             path.insert(0, current.name)
             current = current.parent
-        return " > ".join(path) if path else "Unfiled"
+        return ' > '.join(path) if path else 'Unfiled'
 
     @property
     def barcode_string(self):
         """Returns the full barcode string including prefix"""
         prefix = settings.BARCODE_PREFIX
-        return f"{prefix}{self.id}"
+        return f'{prefix}{self.id}'
 
     def get_absolute_url(self):
         from django.urls import reverse
 
         return reverse('app:item_detail', kwargs={'pk': self.pk})
 
-    def soft_delete(self, reason=""):
+    def soft_delete(self, reason=''):
         """Soft delete this item and all its children recursively"""
         # Recursively soft delete all children
         for child in self.children.all():
-            child.soft_delete(f"Parent container deleted: {reason}")
+            child.soft_delete(f'Parent container deleted: {reason}')
 
         self.deleted = True
         self.deleted_at = timezone.now()
@@ -221,17 +221,17 @@ class ExternalBarcode(models.Model):
         ('OTHER', 'Other'),
     ]
 
-    code = models.CharField(max_length=255, help_text="The external barcode value")
+    code = models.CharField(max_length=255, help_text='The external barcode value')
     item = models.ForeignKey(
         Item,
         on_delete=models.CASCADE,
         related_name='external_barcodes',
-        help_text="The item this barcode is associated with",
+        help_text='The item this barcode is associated with',
     )
     barcode_type = models.CharField(
-        max_length=50, choices=BARCODE_TYPE_CHOICES, default='UPC', help_text="Type of external barcode"
+        max_length=50, choices=BARCODE_TYPE_CHOICES, default='UPC', help_text='Type of external barcode'
     )
-    notes = models.TextField(blank=True, help_text="Additional context for this barcode association")
+    notes = models.TextField(blank=True, help_text='Additional context for this barcode association')
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -243,7 +243,7 @@ class ExternalBarcode(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.code} ({self.barcode_type}) -> {self.item.name}"
+        return f'{self.code} ({self.barcode_type}) -> {self.item.name}'
 
     @staticmethod
     def guess_type_from_str(barcode_string):
@@ -272,10 +272,10 @@ class ItemHistory(models.Model):
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='history_entries')
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    description = models.TextField(help_text="Human-readable description of what changed")
+    description = models.TextField(help_text='Human-readable description of what changed')
     user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    metadata = models.JSONField(default=dict, blank=True, help_text="Additional structured data about the change")
+    metadata = models.JSONField(default=dict, blank=True, help_text='Additional structured data about the change')
 
     class Meta:
         indexes = [
@@ -285,4 +285,4 @@ class ItemHistory(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return f"{self.timestamp.date()}: {self.action} - {self.item.name}"
+        return f'{self.timestamp.date()}: {self.action} - {self.item.name}'
