@@ -289,3 +289,15 @@ def item_detail(request, pk):
     }
 
     return render(request, 'app/item_detail.html', context)
+
+
+def lost_view(request):
+    """Display the root Lost item and all its descendants in a tree."""
+    lost_item = Item.get_lost_item()
+    tree_structure = lost_item.get_contained_tree() if lost_item else None
+
+    context = {
+        'lost_item': lost_item,
+        'tree_structure': tree_structure,
+    }
+    return render(request, 'app/lost.html', context)
