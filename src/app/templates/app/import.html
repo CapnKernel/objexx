@@ -2,6 +2,15 @@
 
 {% block title %}Import Items{% endblock title %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'app:top' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Import Items</li>
+    </ol>
+</nav>
+{% endblock breadcrumbs %}
+
 {% block body %}
 <div class="container mt-4">
     <h1>Import Items from CSV</h1>

@@ -11,6 +11,15 @@
 {{ block.super }}
 {% endblock nav %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'app:top' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">{% if q %}Search{% else %}All Items{% endif %}</li>
+    </ol>
+</nav>
+{% endblock breadcrumbs %}
+
 {% block body %}
 <div class="row">
     <div class="col-12">

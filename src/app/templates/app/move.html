@@ -8,6 +8,15 @@
 {% block barcode_form %}
 {% endblock barcode_form %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'app:item_detail' pk=item.pk %}">{{ item.name }}</a></li>
+        <li class="breadcrumb-item active">Move</li>
+    </ol>
+</nav>
+{% endblock breadcrumbs %}
+
 {% block body %}
     <div class="row">
         <div class="col-md-8 mx-auto">

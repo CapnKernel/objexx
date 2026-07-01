@@ -13,6 +13,14 @@
 
 {# FIXME: Make this page show something sensible if not logged in.  May need changes to the view. #}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+</nav>
+{% endblock breadcrumbs %}
+
 {% block body %}
 <div x-data="{ activeTab: 'dashboard' }">
     <!-- Dashboard Tab -->

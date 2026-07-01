@@ -13,16 +13,18 @@
 {% url 'admin:app_item_change' item.id %}
 {% endblock item-admin-link %}
 
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'app:item_list' %}">Items</a></li>
+        <li class="breadcrumb-item active">{{ item.name }}</li>
+    </ol>
+</nav>
+{% endblock breadcrumbs %}
+
 {% block body %}
 <div class="row">
     <div class="col-12">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'app:item_list' %}">Items</a></li>
-                <li class="breadcrumb-item active">{{ item.name }}</li>
-            </ol>
-        </nav>
-
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title mb-0">{{ item.name }}</h2>
