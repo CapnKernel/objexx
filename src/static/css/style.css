@@ -94,6 +94,11 @@
     margin-top: 0.5rem;
 }
 
+/* Breadcrumb chevron separator */
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "\00BB";
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .navbar-nav .nav-item {
