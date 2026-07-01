@@ -218,6 +218,7 @@ class ExternalBarcode(models.Model):
         ('SERIAL', 'Serial Number'),
         ('DISTRIBUTOR', 'Distributor Part Number'),
         ('SHIPPING', 'Shipping Barcode'),
+        ('LCSC', 'LCSC QR Code'),
         ('OTHER', 'Other'),
     ]
 
@@ -245,14 +246,41 @@ class ExternalBarcode(models.Model):
     def __str__(self):
         return f'{self.code} ({self.barcode_type}) -> {self.item.name}'
 
+    @property
+    def link(self):
+        """Return a URL for this barcode if it has an external product page, else None."""
+        if self.barcode_type == 'LCSC':
+            lcsc_part = ExternalBarcode.extract_lcsc_part_number(self.code)
+            if lcsc_part:
+                return f'https://www.lcsc.com/product-detail/{lcsc_part}.html'
+        return None
+
     @staticmethod
     def guess_type_from_str(barcode_string):
         # Guess the barcode type.
+        if ExternalBarcode.extract_lcsc_part_number(barcode_string):
+            return 'LCSC'
         if re.match(r'^\d{12,13}$', barcode_string):
             # UPC or EAN
             return 'UPC'
         else:
             return 'OTHER'
+
+    @staticmethod
+    def is_possible_action_barcode(barcode_string):
+        """Check if a barcode string looks like an action barcode (e.g., V=AUDIT)."""
+        return bool(re.match(f'^{re.escape(settings.BARCODE_VERB_PREFIX)}', barcode_string))
+
+    @staticmethod
+    def extract_lcsc_part_number(barcode_string):
+        """Extract LCSC part number (C followed by digits) from a barcode string, if present."""
+        match = re.search(r'pc:(C\d+),', barcode_string)
+        if match:
+            return match.group(1)
+        match = re.match(r'C\d+,', barcode_string)
+        if match:
+            return barcode_string
+        return None
 
 
 class ItemHistory(models.Model):

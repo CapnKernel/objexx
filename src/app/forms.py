@@ -1,7 +1,9 @@
 import csv
 from io import StringIO
+
 from django import forms
 from django.core.exceptions import ValidationError
+
 from .models import Item
 
 
@@ -29,6 +31,27 @@ class ItemCreateForm(forms.ModelForm):
         # Only show non-deleted items as parent options
         self.fields['parent'].queryset = Item.objects.filter(deleted=False)
         self.fields['parent'].required = False
+
+
+class ExternalBarcodeForm(forms.Form):
+    """Form for associating external barcodes with an item"""
+
+    barcode = forms.CharField(
+        label='Scan a barcode',
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'aria-label': 'Scan barcode',
+                'autofocus': True,
+            }
+        ),
+        help_text='Scan an external barcode to add it to the list, or scan an item barcode.',
+    )
+
+    pending_barcodes = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+    )
 
 
 class CSVImportForm(forms.Form):

@@ -1,19 +1,18 @@
-import csv
 import re
 from datetime import datetime, timedelta
-from io import StringIO
 from urllib.parse import urlencode
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required
 from django.db import transaction
 from django.db.models import Q
-from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from .forms import CSVImportForm, ItemCreateForm
+from .forms import ExternalBarcodeForm, ItemCreateForm
 from .models import ExternalBarcode, Item
 
 
@@ -44,49 +43,52 @@ def scan_redirect(request):
         # redirect to its detail page
         item.last_scanned_at = timezone.now()
         item.save()
-        # Store the scanned item ID in session for action views
-        # FIXME: Ditch use of session by modifying the scan barcode text input form to have a hidden field
-        # for the last scanned barcode, if and only if the last thing we scanned was a valid barcode.
-        request.session['last_scanned_item_id'] = item.id
         return redirect(item)
 
     # So we don't have an item.  Check if this is an action barcode (e.g., V=AUDIT)
     action_match = re.match(f'^{re.escape(settings.BARCODE_VERB_PREFIX)}(.+)$', code)
     if action_match:
         action_name = action_match.group(1).lower()
-        id_of_last_scanned_item = request.session.get('last_scanned_item_id')
-        if id_of_last_scanned_item:
+
+        item_id = request.GET['item']
+        if item_id:
             try:
                 # Verify the item exists
-                Item.objects.get(id=id_of_last_scanned_item)
+                Item.objects.get(id=item_id)
                 # Redirect to the action URL instead of calling the function directly
-                url = reverse('app:item_action', kwargs={"pk": id_of_last_scanned_item, "action": action_name})
+                url = reverse('app:item_action', kwargs={'pk': item_id, 'action': action_name})
+                # print(f"Action redirection to {url}")
                 return redirect(url)
             except Item.DoesNotExist:
-                raise Http404(f"Item {id_of_last_scanned_item} for action '{action_name}' not found")
+                raise Http404(f"Item {item_id} for action '{action_name}' not found")
+
         # No last scanned item found - return 400 Bad Request
-        return HttpResponseBadRequest(f"Action '{action_name}' requires a previously scanned item")
+        return HttpResponseBadRequest(f"Action '{action_name}' requires an item to operate on")
 
     # Perhaps it's a barcode in our internal format, but we've never seen it before
     if Item.get_possible_item_id_from_internal_barcode(code):
         # Redirect to new item page with this ID pre-filled
         url = reverse('app:new_item', query={'barcode': code})
-        return HttpResponseRedirect(url)
+        return redirect(url)
 
     # Perhaps it's a search (starts with '/')
     if code.startswith('/'):
         query = code[1:]  # Strip leading '/'
         url = reverse('app:item_list') + '?' + urlencode({'q': query})
-        return HttpResponseRedirect(url)
+        return redirect(url)
 
     # Perhaps it's an external barcode we haven't seen before for an existing item
     url = reverse('app:new_external_barcode', query={'barcode': code})
-    return HttpResponseRedirect(url)
+    return redirect(url)
 
-# FIXME: Candidates for moving to actions.py?
+
 def create_new_external_barcodes_for_item(item, external_barcodes_text):
     """Helper function to create ExternalBarcode objects from textarea input"""
-    barcodes = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
+    # Don't move these to actions.py, because they don't rely on action barcodes.
+    if isinstance(external_barcodes_text, str):
+        barcodes = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
+    else:
+        barcodes = list(external_barcodes_text)
     with transaction.atomic():
         for barcode_value in barcodes:
             if item.external_barcodes.filter(code=barcode_value).exists():
@@ -102,64 +104,81 @@ def create_new_external_barcodes_for_item(item, external_barcodes_text):
 
 def new_item(request):
     """Display a form for creating a new item with a given internal barcode"""
+    error_msg = None
+    form = None
+
     barcode = request.GET.get('barcode', '').strip()
     if not barcode:
-        return HttpResponseBadRequest('Internal barcode for item is required')
-    possible_new_id = Item.get_possible_item_id_from_internal_barcode(barcode)
-    if not possible_new_id:
-        return HttpResponseBadRequest('Internal barcode for item is not in required format')
-    item = Item.from_barcode(barcode)
-    if item:
-        return HttpResponseBadRequest('Item already exists')
-
-    errors = None
-
-    if request.method == 'POST':
-        # FIXME: Where do we patch the id from the barcode into the item?
-        form = ItemCreateForm(request.POST or None)
-        if form.is_valid():
-            with transaction.atomic():
-                item = form.save(commit=False)
-                item.last_scanned_at = timezone.now()
-                # Here's where we patch in the id so it doesn't have an existing one
-                item.pk = possible_new_id
-                item.save()
-
-                # Save the selected parent to session for next time
-                parent = form.cleaned_data.get('parent')
-                if parent:
-                    request.session['last_used_parent_id'] = parent.id
-                elif 'last_used_parent_id' in request.session:
-                    # If no parent selected, remove the stored parent
-                    del request.session['last_used_parent_id']
-
-                # Handle external barcodes from the textarea
-                external_barcodes_text = form.cleaned_data.get('external_barcodes', '').strip()
-                if external_barcodes_text:
-                    create_new_external_barcodes_for_item(item, external_barcodes_text)
-
-                return redirect(item)
-        else:
-            errors = form.errors
+        error_msg = 'To create a new item, scan an unused internal barcode.'
+    elif ExternalBarcode.is_possible_action_barcode(barcode):
+        messages.warning(request, 'Action barcodes cannot be added as external barcodes.')
     else:
-        # GET request - check for external barcode parameter
-        initial_data = {}
-        external_barcode = request.GET.get('external', '').strip()
-        if external_barcode:
-            initial_data['external_barcodes'] = external_barcode
+        # Existing item?
+        item = Item.from_barcode(barcode)
+        if item:
+            # If external barcodes were passed (e.g., from new_external_barcode),
+            # add them to the existing item before redirecting.
+            external_barcodes_text = request.GET.get('external_barcodes', '').strip()
+            if external_barcodes_text:
+                create_new_external_barcodes_for_item(item, external_barcodes_text)
+            messages.info(request, f"Item with barcode '{barcode}' already exists")
+            return redirect(item)
 
-        # Set parent from session if available
-        last_parent_id = request.session.get('last_used_parent_id')
-        if last_parent_id:
-            try:
-                last_parent = Item.objects.get(id=last_parent_id, deleted=False)
-                initial_data['parent'] = last_parent
-            except Item.DoesNotExist:
-                # If the parent no longer exists, remove it from session
-                if 'last_used_parent_id' in self.request.session:
-                    del request.session['last_used_parent_id']
+        possible_new_id = Item.get_possible_item_id_from_internal_barcode(barcode)
+        if not possible_new_id:
+            error_msg = f"Barcode '{barcode}' is not in the required internal format"
 
-        form = ItemCreateForm(initial=initial_data)
+    if not error_msg:
+        if request.method == 'POST':
+            form = ItemCreateForm(request.POST or None)
+            if form.is_valid():
+                with transaction.atomic():
+                    item = form.save(commit=False)
+                    item.last_scanned_at = timezone.now()
+                    # Here's where we patch in the id so it doesn't get assigned one when we save
+                    item.pk = possible_new_id
+                    item.save()
+
+                    # Save the selected parent to session for next time
+                    parent = form.cleaned_data.get('parent')
+                    if parent:
+                        # Save parent as the default for the next new item
+                        request.session['last_used_parent_id'] = parent.pk
+                    elif 'last_used_parent_id' in request.session:
+                        # If no parent selected, remove the stored parent
+                        del request.session['last_used_parent_id']
+
+                    # Handle external barcodes from the textarea
+                    external_barcodes_text = form.cleaned_data.get('external_barcodes', '').strip()
+                    external_barcodes = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
+                    if any(ExternalBarcode.is_possible_action_barcode(b) for b in external_barcodes):
+                        messages.warning(request, 'Action barcodes cannot be added as external barcodes.')
+                    else:
+                        create_new_external_barcodes_for_item(item, external_barcodes)
+
+                    return redirect(item)
+        else:
+            # GET request - check for external barcode parameter
+            # Generate a form pre-seeded with the barcode we scanned, and an external barcode if given.
+            initial_data = {}
+            external_barcodes = request.GET.get('external_barcodes', '').strip()
+            if external_barcodes:
+                initial_data['external_barcodes'] = external_barcodes
+
+            # Set parent from session if available
+            last_parent_id = request.session.get('last_used_parent_id')
+            if last_parent_id:
+                try:
+                    last_parent = Item.objects.get(id=last_parent_id, deleted=False)
+                    initial_data['parent'] = last_parent
+                except Item.DoesNotExist:
+                    # If the parent no longer exists, remove it from session
+                    if 'last_used_parent_id' in request.session:
+                        del request.session['last_used_parent_id']
+
+            form = ItemCreateForm(initial=initial_data)
+    else:
+        messages.error(request, error_msg)
 
     context = {
         'barcode': barcode,
@@ -170,44 +189,64 @@ def new_item(request):
 
 def new_external_barcode(request):
     """Display a form for creating a new item with an external barcode"""
-    external_barcode_str = request.GET.get('barcode', '').strip()
-    if not external_barcode_str:
-        return HttpResponseBadRequest('External barcode is required')
-
     if request.method == 'POST':
-        item_barcode = request.POST.get('item_barcode', '').strip()
-        if not item_barcode:
-            return HttpResponseBadRequest('Item barcode is required')
-        # Check if item with this barcode already exists
-        item = Item.from_barcode(item_barcode)
-        if not item:
-            # Check if this could be a valid new item barcode
-            possible_new_id = Item.get_possible_item_id_from_internal_barcode(item_barcode)
+        form = ExternalBarcodeForm(request.POST or None)
+        if form.is_valid():
+            barcode = form.cleaned_data['barcode']
+            pending_raw = form.cleaned_data.get('pending_barcodes', '').strip()
+            pending = [b.strip() for b in pending_raw.split('\n') if b.strip()]
+
+            # Check if the scanned barcode is an item barcode (existing or new)
+            item = Item.from_any_barcode(barcode)
+            if item:
+                # Existing.  Add any pending external barcodes to it.
+                create_new_external_barcodes_for_item(item, pending)
+                item.last_scanned_at = timezone.now()
+                item.save()
+                return redirect(item)
+
+            # Is it a candidate for a new item?
+            possible_new_id = Item.get_possible_item_id_from_internal_barcode(barcode)
             if possible_new_id:
-                # Redirect to new_item with both barcode and external parameters
                 url = reverse(
                     'app:new_item',
-                    query={'barcode': item_barcode, 'external': external_barcode_str},
+                    query={'barcode': barcode, 'external_barcodes': '\n'.join(pending)},
                 )
-                return HttpResponseRedirect(url)
-            return HttpResponseBadRequest('Item not found')
+                return redirect(url)
 
-        create_new_external_barcodes_for_item(item, external_barcode_str)
-        item.last_scanned_at = timezone.now()
-        item.save()
+            # Not an item barcode — treat as another external barcode
+            if barcode in pending:
+                messages.warning(request, 'Duplicate external barcode, ignored.')
+            else:
+                if ExternalBarcode.is_possible_action_barcode(barcode):
+                    messages.warning(request, 'Action barcodes cannot be added as external barcodes.')
+                else:
+                    pending.append(barcode)
 
-        return redirect(item)
+            # Re-render with updated pending list
+            pending_text = '\n'.join(pending)
+            form = ExternalBarcodeForm(initial={'pending_barcodes': pending_text})
+    else:
+        barcode = request.GET.get('barcode', '').strip()
+        pending = [barcode]
+        if not barcode:
+            messages.error(request, 'External barcode is required')
+            return redirect('app:top')
+        form = ExternalBarcodeForm(initial={'pending_barcodes': barcode})
 
     lcsc = None
-    match = re.search(r'pc:(C\d+),', external_barcode_str)
-    if match:
-        lcsc = match.group(1)  # Extract LCSC part
+    for bc in pending:
+        lcsc = ExternalBarcode.extract_lcsc_part_number(bc)
+        if lcsc:
+            break
 
     back_url = request.META.get('HTTP_REFERER', reverse('app:top'))
 
     context = {
         'lcsc': lcsc,
-        'barcode': external_barcode_str,
+        'barcode': barcode,
+        'pending_barcodes': pending,
+        'form': form,
         'back_url': back_url,
     }
 
@@ -250,132 +289,3 @@ def item_detail(request, pk):
     }
 
     return render(request, 'app/item_detail.html', context)
-
-
-def import_items(request):
-    """Handle CSV import of items"""
-    # FIXME: Move this to a separate file, e.g., import_items.py
-    if request.method == 'POST':
-        form = CSVImportForm(request.POST)
-        ctx = {'form': form}
-
-        if form.is_valid():
-            csv_data = form.cleaned_data['csv_data']
-            save_requested = form.cleaned_data['save']
-            ctx['csv_data'] = csv_data
-
-            try:
-                # Parse CSV data
-                reader = csv.DictReader(StringIO(csv_data), delimiter='\t')
-
-                # Validate headers
-                expected_headers = {'ID', 'In', 'Name', 'Desc'}
-                actual_headers = set(reader.fieldnames)
-                if not expected_headers.issubset(actual_headers):
-                    form.add_error(
-                        'csv_data',
-                        f'Missing required headers: {", ".join(expected_headers - actual_headers)}',
-                    )
-                    return render(request, 'app/import.html', {'form': form})
-
-                # Process and validate each row
-                validated_items = []
-                errors = []
-                last_parent = None
-                total_items = 0
-                root_items = 0
-                child_items = 0
-                created_count = 0
-
-                with transaction.atomic():
-                    for i, row in enumerate(reader):
-                        n = i + 2  # Account for header row
-                        # Map CSV fields to model fields
-                        mapper = {
-                            'ID': 'id',
-                            'Name': 'name',
-                            'Desc': 'description',
-                            'In': 'parent_id',
-                        }
-                        print(f'{row=}')
-
-                        data = {v: (row[k] if row[k] else '').strip() for k, v in mapper.items()}
-
-                        if not data['name'].strip():
-                            continue  # Skip rows without a name
-
-                        # Determine parent based on 'In' field
-                        in_field = data['parent_id']
-                        parent = None
-                        if in_field == '-root-':
-                            parent = None
-                            last_parent = None
-                        elif in_field.isdigit():
-                            parent = in_field
-                            last_parent = parent
-                        elif not in_field:
-                            parent = last_parent
-                        else:
-                            errors.append(f"Line {n}: Invalid 'In' field value: {in_field}")
-                            continue
-
-                        # Update parent in data
-                        data['parent_id'] = parent
-
-                        validated_items.append(data)
-                        total_items += 1
-                        if data['parent_id']:
-                            child_items += 1
-                        else:
-                            root_items += 1
-                        if save_requested:
-                            # If save was requested, save the items
-                            try:
-                                item = Item.objects.get(pk=data['id'])
-                            except Item.DoesNotExist:
-                                item = Item()
-                                item.id = data['id']
-                            for k, v in data.items():
-                                if k != 'id':
-                                    setattr(item, k, v)
-                            item.save()
-                            created_count += 1
-
-                    if errors:
-                        if save_requested:
-                            transaction.set_rollback(True)
-
-                        # Show errors and allow correction
-                        ctx['errors'] = errors
-                    else:
-                        # All validation passed
-                        ctx['validated_items'] = validated_items
-                        ctx['stats'] = {
-                            'total_items': total_items,
-                            'root_items': root_items,
-                            'child_items': child_items,
-                        }
-                        ctx['save'] = True
-
-                        if save_requested:
-                            # Redirect to item list with success message
-                            msg = {
-                                'message': f'Successfully imported {created_count} items',
-                                'message_type': 'success',
-                            }
-                            url = reverse('app:item_list', query=msg)
-                            return redirect(url)
-
-                return render(request, 'app/import.html', ctx)
-
-            except Exception as e:
-                form.add_error('csv_data', f'Error parsing CSV: {e}')
-                return render(request, 'app/import.html', ctx)
-
-        # Form is invalid
-        return render(request, 'app/import.html', ctx)
-
-    else:
-        # GET request - show empty form
-        form = CSVImportForm()
-        return render(request, 'app/import.html', {'form': form})

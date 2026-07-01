@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib import messages
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -49,19 +50,18 @@ def move(request, pk):
 
         # Determine destination from barcode
         if not destination_barcode:
-            context['error'] = "Creating top-level items can't be done with this form."
-
+            messages.error(request, "Creating top-level items can't be done with this form.")
             return render(request, 'app/move.html', context)
 
         # Find destination item by barcode
         destination_item = Item.from_barcode(destination_barcode)
         if not destination_item:
-            context['error'] = f"Destination item with barcode '{destination_barcode}' not found"
+            messages.error(request, f"Destination item with barcode '{destination_barcode}' not found")
             return render(request, 'app/move.html', context)
 
         # Check if moving would create a cycle
         if src_item.is_ancestor_of(destination_item):
-            context['error'] = f'Cannot move item into its own descendant: {destination_item.path}'
+            messages.error(request, f'Cannot move item into its own descendant: {destination_item.path}')
             return render(request, 'app/move.html', context)
 
         with transaction.atomic():
@@ -74,9 +74,9 @@ def move(request, pk):
 
             # FIXME: Create an ItemHistory record for the move.
 
-            # FIXME: Add a toast to say result.
-            # One toast for "didn't move" and one for "moved to X".
-
+        messages.success(
+            request, f'{src_item.name} moved from {src_item.previously_in.name} to {destination_item.name}.'
+        )
         return redirect(src_item)
 
     return render(request, 'app/move.html', context)

@@ -37,7 +37,7 @@
         {% if messages %}
             <div class="container mt-3">
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -63,18 +63,19 @@
                             <a class="nav-link{{ nav.items }}" href='{% url "app:item_list" %}'>Items</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link{{ nav.new }}" href="#">New item</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="{% block item-admin-link %}{% url 'admin:index' %}{% endblock item-admin-link %}">Admin</a>
                         </li>
                     </ul>
                     {% endblock nav %}
                     {% block barcode_form %}
-                    <form class="d-flex me-3" method="get" action="{% url 'app:scan_redirect' %}">
-                        <input class="form-control me-2" type="text" name="barcode" placeholder="Scan barcode..." value="{{ barcode_value }}"
-                               aria-label="Scan barcode" autofocus>
-                    </form>
+                    {# Form? #}
+                        <form class="d-flex me-3" method="get" action="{% url 'app:scan_redirect' %}">
+                            <input class="form-control me-2" type="text" name="barcode" placeholder="Scan barcode..." value="{{ barcode_value }}"
+                                aria-label="Scan barcode" autofocus>
+                            {% if item %}
+                                <input type="hidden" name="item" value="{{ item.pk }}">
+                            {% endif %}
+                        </form>
                     {% endblock barcode_form %}
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
@@ -108,6 +109,7 @@
                 integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
                 crossorigin="anonymous"></script>
 
+{% comment %}
         <!-- Toast container -->
         <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3 toast-z-index"></div>
 
@@ -150,6 +152,7 @@
                 }
             });
         </script>
+{% endcomment %}
 
        {% if css_body_background_colour %}
             <script>document.body.style.backgroundColor = '{{ css_body_background_colour }}';</script>

@@ -154,7 +154,13 @@
                             <tbody>
                                 {% for barcode in item.external_barcodes.all %}
                                 <tr>
-                                    <td><code>{{ barcode.code }}</code></td>
+                                    <td>
+                                        {% if barcode.link %}
+                                            <a href="{{ barcode.link }}"><code>{{ barcode.code }}</code></a>
+                                        {% else %}
+                                            <code>{{ barcode.code }}</code>
+                                        {% endif %}
+                                    </td>
                                     <td><span class="badge bg-info">{{ barcode.barcode_type }}</span></td>
                                     <td>{{ barcode.notes|default:"-" }}</td>
                                     <td>{{ barcode.created_at }}</td>
