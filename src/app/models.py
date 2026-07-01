@@ -1,9 +1,12 @@
+import logging
 import re
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 class Item(models.Model):
@@ -34,9 +37,7 @@ class Item(models.Model):
         A 'Lost' item is a root item (no parent) named 'Lost' that is not deleted.
         Returns the Item if found, None otherwise.
         """
-        import logging
 
-        logger = logging.getLogger(__name__)
         try:
             lost_item = Item.objects.get(name='Lost', parent=None, deleted=False)
             logger.info(f'Found Lost item: {lost_item} (id={lost_item.id})')
@@ -47,6 +48,43 @@ class Item(models.Model):
         except Item.MultipleObjectsReturned:
             logger.error("Multiple root-level items named 'Lost' found — data integrity issue")
             return None
+
+    @staticmethod
+    def create_lost_box():
+        """
+        Create a new lost box item as a child of the root 'Lost' item.
+        The name follows the pattern 'Lost-{date}-{letter}' where date is in
+        'd-mmm-yyyy' format (e.g., 'Lost-14-Feb-2026a') and letter increments
+        from 'a' upwards based on existing items for today's date.
+        Returns the newly created Item, or None if the Lost item doesn't exist.
+        """
+
+        lost_item = Item.get_lost_item()
+        if lost_item is None:
+            logger.error("Cannot create lost box: no root 'Lost' item exists")
+            return None
+
+        # Use Django timezone-aware localtime for the date
+        today = timezone.localtime(timezone.now()).date()
+        # Linux strftime: %-d = no-padded day, %b = abbreviated month, %Y = 4-digit year
+        date_prefix = today.strftime('Lost-%-d-%b-%Y')
+
+        # Find the last (alphabetically highest) existing child of Lost for today
+        latest_lost_box = (
+            lost_item.children.filter(name__istartswith=date_prefix, deleted=False).order_by('name').last()
+        )
+
+        # Determine the next letter
+        if latest_lost_box:
+            suffix = latest_lost_box.name[-1]  # e.g., 'c' from 'Lost-14-Feb-2026c'
+            next_letter = chr(ord(suffix[0]) + 1)
+        else:
+            next_letter = 'a'  # First box for today
+
+        new_name = f'{date_prefix}{next_letter}'
+        new_item = Item.objects.create(name=new_name, parent=lost_item)
+        logger.info(f'Created lost box: {new_item} (id={new_item.id})')
+        return new_item
 
     @staticmethod
     def get_possible_item_id_from_internal_barcode(barcode_string):
