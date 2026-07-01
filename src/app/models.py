@@ -28,6 +28,27 @@ class Item(models.Model):
         return None
 
     @staticmethod
+    def get_lost_item():
+        """
+        Find and return the root-level 'Lost' item.
+        A 'Lost' item is a root item (no parent) named 'Lost' that is not deleted.
+        Returns the Item if found, None otherwise.
+        """
+        import logging
+
+        logger = logging.getLogger(__name__)
+        try:
+            lost_item = Item.objects.get(name='Lost', parent=None, deleted=False)
+            logger.info(f'Found Lost item: {lost_item} (id={lost_item.id})')
+            return lost_item
+        except Item.DoesNotExist:
+            logger.warning("Lost item not found (no root-level item named 'Lost' exists)")
+            return None
+        except Item.MultipleObjectsReturned:
+            logger.error("Multiple root-level items named 'Lost' found — data integrity issue")
+            return None
+
+    @staticmethod
     def get_possible_item_id_from_internal_barcode(barcode_string):
         match = re.match(f'^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$', barcode_string)
         if match:
