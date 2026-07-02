@@ -272,6 +272,9 @@ def item_list(request):
         'barcode_value': f'/{query}' if query else '',
     }
 
+    if request.htmx:
+        return render(request, 'app/item_list.html#item-table', context)
+
     return render(request, 'app/item_list.html', context)
 
 
