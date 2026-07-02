@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Apps in the venv
     'dbbackup',
-    'template_partials',
     'django_navtag',
     # See end of this file for debug tools
     # Apps in this project
