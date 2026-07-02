@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # Apps in the venv
     'dbbackup',
     'django_navtag',
+    'django_htmx',
     # See end of this file for debug tools
     # Apps in this project
     'app',
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'conf.middleware.LoginRequiredExemptMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
     'conf.middleware.TimezoneMiddleware',
 ]
 

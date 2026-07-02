@@ -1,5 +1,6 @@
 {% load static %}
 {% load navtag %}
+{% load django_htmx %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,7 +25,7 @@
         <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 
         <!-- HTMX -->
-        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        {% htmx_script %}
 
         <!-- Alpine.js -->
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
