@@ -118,6 +118,13 @@
                                         {{ item.previously_in.path }}
                                     </a>
                                     &nbsp; <code>{{ item.previously_in.barcode_string }}</code>
+                                    <form method="post"
+                                          action="{% url 'app:item_action' action='move' pk=item.pk %}"
+                                          class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="barcode" value="{{ item.previously_in.barcode_string }}">
+                                        <button type="submit" class="btn btn-outline-primary btn-sm ms-2">Move back</button>
+                                    </form>
                                 </td>
                             </tr>
                         {% endif %}
