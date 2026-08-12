@@ -92,7 +92,7 @@ def move_container_options(request, pk):
     our_children = [child.id for child in item.get_all_children()]
 
     # Get all items that can hold items (excluding the current item and its descendants)
-    items = Item.objects.filter(deleted=False)
+    items = Item.objects.all()
     # Exclude ourself.
     items = items.exclude(id=item.id)
     # Exclude our descendants (this will prevent graph cycles, which would be ugly!)

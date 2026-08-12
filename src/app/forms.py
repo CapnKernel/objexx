@@ -28,8 +28,7 @@ class ItemCreateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only show non-deleted items as parent options
-        self.fields['parent'].queryset = Item.objects.filter(deleted=False)
+        self.fields['parent'].queryset = Item.objects.all()
         self.fields['parent'].required = False
 
 

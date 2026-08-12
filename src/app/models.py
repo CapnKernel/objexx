@@ -24,7 +24,7 @@ class Item(models.Model):
         match = re.match(f'^{re.escape(settings.BARCODE_PREFIX)}(\\d+)$', barcode_string)
         if match:
             try:
-                return Item.objects.get(id=match.group(1), deleted=False)
+                return Item.objects.get(id=match.group(1))
             except Item.DoesNotExist:
                 pass
 
@@ -34,12 +34,12 @@ class Item(models.Model):
     def get_lost_item():
         """
         Find and return the root-level 'Lost' item.
-        A 'Lost' item is a root item (no parent) named 'Lost' that is not deleted.
+        A 'Lost' item is a root item (no parent) named 'Lost'.
         Returns the Item if found, None otherwise.
         """
 
         try:
-            lost_item = Item.objects.get(name='Lost', parent=None, deleted=False)
+            lost_item = Item.objects.get(name='Lost', parent=None)
             logger.info(f'Found Lost item: {lost_item} (id={lost_item.id})')
             return lost_item
         except Item.DoesNotExist:
@@ -70,9 +70,7 @@ class Item(models.Model):
         date_prefix = today.strftime('Lost-%-d-%b-%Y')
 
         # Find the last (alphabetically highest) existing child of Lost for today
-        latest_lost_box = (
-            lost_item.children.filter(name__istartswith=date_prefix, deleted=False).order_by('name').last()
-        )
+        latest_lost_box = lost_item.children.filter(name__istartswith=date_prefix).order_by('name').last()
 
         # Determine the next letter
         if latest_lost_box:
@@ -149,25 +147,19 @@ class Item(models.Model):
     # Scanning Tracking
     last_scanned_at = models.DateTimeField(null=True, blank=True, help_text='When this item was last scanned')
 
-    # Soft Deletion
-    deleted = models.BooleanField(default=False, help_text='Whether this item has been deleted')
-    deleted_at = models.DateTimeField(null=True, blank=True, help_text='When this item was deleted')
-    deletion_reason = models.TextField(blank=True, help_text='Reason for deletion (broken, consumed, etc.)')
-
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
-            models.Index(fields=['deleted', 'parent']),
+            models.Index(fields=['parent']),
             models.Index(fields=['barcode_printed_at']),
             models.Index(fields=['contents_printed_at']),
         ]
 
     def __str__(self):
-        status = ' [DELETED]' if self.deleted else ''
-        return f'{self.name} ({self.barcode_string}){status}'
+        return f'{self.name} ({self.barcode_string})'
 
     @property
     def is_container(self):
@@ -189,7 +181,7 @@ class Item(models.Model):
         """Returns the full location path as a string"""
         path = []
         current = self
-        while current and not current.deleted:
+        while current:
             path.insert(0, current.name)
             current = current.parent
         return ' > '.join(path) if path else 'Unfiled'
@@ -204,17 +196,6 @@ class Item(models.Model):
         from django.urls import reverse
 
         return reverse('app:item_detail', kwargs={'pk': self.pk})
-
-    def soft_delete(self, reason=''):
-        """Soft delete this item and all its children recursively"""
-        # Recursively soft delete all children
-        for child in self.children.all():
-            child.soft_delete(f'Parent container deleted: {reason}')
-
-        self.deleted = True
-        self.deleted_at = timezone.now()
-        self.deletion_reason = reason
-        self.save()
 
     def mark_barcode_printed(self):
         """Mark the item's barcode as printed"""
@@ -233,18 +214,18 @@ class Item(models.Model):
         if include_self:
             children.append(self)
 
-        for child in self.children.filter(deleted=False):
+        for child in self.children.all():
             children.append(child)
             children.extend(child.get_all_children())
 
         return children
 
     def get_contained_tree(self):
-        """Get a tree structure of all contained items (non-deleted children only)"""
+        """Get a tree structure of all contained items"""
 
         def build_tree(item):
             tree = {'item': item, 'children': []}
-            for child in item.children.filter(deleted=False).order_by('id'):
+            for child in item.children.order_by('id'):
                 tree['children'].append(build_tree(child))
             return tree
 

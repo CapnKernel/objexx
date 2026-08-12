@@ -27,9 +27,6 @@
 <div class="card">
     <div class="card-header">
         <h2 class="card-title mb-0">{{ item.name }}</h2>
-        {% if item.deleted %}
-            <span class="badge bg-danger">Deleted</span>
-        {% endif %}
     </div>
     <div class="card-body">
         <div class="row">
@@ -123,16 +120,6 @@
                                     &nbsp; <code>{{ item.previously_in.barcode_string }}</code>
                                 </td>
                             </tr>
-                        {% endif %}
-                        {% if item.deleted %}
-                        <tr>
-                            <th>Deleted At</th>
-                            <td>{{ item.deleted_at }}</td>
-                        </tr>
-                        <tr>
-                            <th>Deletion Reason</th>
-                            <td>{{ item.deletion_reason|default:"No reason provided" }}</td>
-                        </tr>
                         {% endif %}
                     </tbody>
                 </table>

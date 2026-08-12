@@ -23,9 +23,9 @@ def top(request):
 
 def dash_stats(request):
     """HTMX endpoint for dashboard statistics"""
-    total_items = Item.objects.filter(deleted=False).count()
+    total_items = Item.objects.count()
     # Count containers (items that have children)
-    container_count = Item.objects.filter(deleted=False, children__isnull=False).distinct().count()
+    container_count = Item.objects.filter(children__isnull=False).distinct().count()
     context = {'total_items': total_items, 'container_count': container_count}
     return render(request, 'app/top.html#dash-stats-cards', context)
 
@@ -169,7 +169,7 @@ def new_item(request):
             last_parent_id = request.session.get('last_used_parent_id')
             if last_parent_id:
                 try:
-                    last_parent = Item.objects.get(id=last_parent_id, deleted=False)
+                    last_parent = Item.objects.get(id=last_parent_id)
                     initial_data['parent'] = last_parent
                 except Item.DoesNotExist:
                     # If the parent no longer exists, remove it from session
@@ -256,7 +256,7 @@ def new_external_barcode(request):
 def item_list(request):
     query = request.GET.get('q', '').strip()
 
-    items = Item.objects.filter(deleted=False).select_related('parent').order_by('id')
+    items = Item.objects.select_related('parent').order_by('id')
     if query:
         filter = Q(name__icontains=query)
         filter |= Q(description__icontains=query)

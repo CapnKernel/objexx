@@ -26,8 +26,8 @@ class ExternalBarcodeInline(admin.TabularInline):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'barcode_string', 'name', 'parent', 'deleted', 'created_at']
-    list_filter = ['deleted', 'created_at']
+    list_display = ['id', 'barcode_string', 'name', 'parent', 'created_at']
+    list_filter = ['created_at']
     search_fields = ['name', 'description']
     readonly_fields = ['created_at', 'last_updated_at']
     inlines = [ExternalBarcodeInline]
