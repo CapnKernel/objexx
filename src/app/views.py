@@ -11,6 +11,8 @@ from django.http import Http404, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
+from django_htmx.http import HttpResponseClientRedirect
 
 from .forms import ExternalBarcodeForm, ItemCreateForm
 from .models import ExternalBarcode, Item
@@ -107,8 +109,12 @@ def create_new_external_barcodes_for_item(item, external_barcodes_text):
             external_barcode_object.save()
 
 
-def new_item(request):
-    """Display a form for creating a new item with a given internal barcode"""
+def new_item_page(request):
+    """Display the full page for creating a new item with a given internal barcode.
+
+    GET only.  The form is rendered from the ``new-item-form`` partial; it posts
+    to :func:`new_item_hxpost`.
+    """
     error_msg = None
     form = None
 
@@ -133,63 +139,101 @@ def new_item(request):
         if not possible_new_id:
             error_msg = f"Barcode '{barcode}' is not in the required internal format"
 
+    external_barcodes_list = []
     if not error_msg:
-        if request.method == 'POST':
-            form = ItemCreateForm(request.POST or None)
-            if form.is_valid():
-                with transaction.atomic():
-                    item = form.save(commit=False)
-                    item.last_scanned_at = timezone.now()
-                    # Here's where we patch in the id so it doesn't get assigned one when we save
-                    item.pk = possible_new_id
-                    item.save()
+        # Generate a form pre-seeded with the barcode we scanned, and an external barcode if given.
+        initial_data = {}
+        external_barcodes = request.GET.get('external_barcodes', '').strip()
+        if external_barcodes:
+            initial_data['external_barcodes'] = external_barcodes
+            external_barcodes_list = [b.strip() for b in external_barcodes.split('\n') if b.strip()]
 
-                    # Save the selected parent to session for next time
-                    parent = form.cleaned_data.get('parent')
-                    if parent:
-                        # Save parent as the default for the next new item
-                        request.session['last_used_parent_id'] = parent.pk
-                    elif 'last_used_parent_id' in request.session:
-                        # If no parent selected, remove the stored parent
-                        del request.session['last_used_parent_id']
+        # Set parent from session if available
+        last_parent_id = request.session.get('last_used_parent_id')
+        if last_parent_id:
+            try:
+                last_parent = Item.objects.get(id=last_parent_id)
+                initial_data['parent'] = last_parent
+            except Item.DoesNotExist:
+                # If the parent no longer exists, remove it from session
+                if 'last_used_parent_id' in request.session:
+                    del request.session['last_used_parent_id']
 
-                    # Handle external barcodes from the textarea
-                    external_barcodes_text = form.cleaned_data.get('external_barcodes', '').strip()
-                    external_barcodes = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
-                    if any(ExternalBarcode.is_possible_action_barcode(b) for b in external_barcodes):
-                        messages.warning(request, 'Action barcodes cannot be added as external barcodes.')
-                    else:
-                        create_new_external_barcodes_for_item(item, external_barcodes)
-
-                    return redirect(item)
-        else:
-            # GET request - check for external barcode parameter
-            # Generate a form pre-seeded with the barcode we scanned, and an external barcode if given.
-            initial_data = {}
-            external_barcodes = request.GET.get('external_barcodes', '').strip()
-            if external_barcodes:
-                initial_data['external_barcodes'] = external_barcodes
-
-            # Set parent from session if available
-            last_parent_id = request.session.get('last_used_parent_id')
-            if last_parent_id:
-                try:
-                    last_parent = Item.objects.get(id=last_parent_id)
-                    initial_data['parent'] = last_parent
-                except Item.DoesNotExist:
-                    # If the parent no longer exists, remove it from session
-                    if 'last_used_parent_id' in request.session:
-                        del request.session['last_used_parent_id']
-
-            form = ItemCreateForm(initial=initial_data)
+        form = ItemCreateForm(initial=initial_data)
     else:
         messages.error(request, error_msg)
 
     context = {
         'barcode': barcode,
         'form': form,
+        'external_barcodes': external_barcodes_list,
     }
     return render(request, 'app/new_item.html', context)
+
+
+@require_POST
+def new_item_hxpost(request):
+    """Create a new item from the ``new-item-form`` partial (POST only).
+
+    On success the item is created and the client is redirected to its detail
+    page via ``HX-Redirect``.  On a validation error, or if an external barcode
+    is an action barcode (in which case the item is not created), the form
+    partial is returned so it can be swapped back in for the user to try again.
+    Messages are handled separately via the messages partial.
+    """
+    barcode = request.GET.get('barcode', '').strip()
+    form = ItemCreateForm(request.POST or None)
+    if form.is_valid():
+        possible_new_id = Item.get_possible_item_id_from_internal_barcode(barcode)
+        item = None
+        with transaction.atomic():
+            item = form.save(commit=False)
+            item.last_scanned_at = timezone.now()
+            # Here's where we patch in the id so it doesn't get assigned one when we save
+            item.pk = possible_new_id
+            item.save()
+
+            # Save the selected parent to session for next time
+            parent = form.cleaned_data.get('parent')
+            if parent:
+                # Save parent as the default for the next new item
+                request.session['last_used_parent_id'] = parent.pk
+            elif 'last_used_parent_id' in request.session:
+                # If no parent selected, remove the stored parent
+                del request.session['last_used_parent_id']
+
+            # Handle external barcodes from the hidden field
+            external_barcodes_text = form.cleaned_data.get('external_barcodes', '').strip()
+            external_barcodes = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
+            action_barcodes = [b for b in external_barcodes if ExternalBarcode.is_possible_action_barcode(b)]
+            if action_barcodes:
+                # Action barcodes cannot be attached to an item.  Drop each one
+                # from the list and refuse to create the item: roll back the
+                # transaction and clear the item so the form is returned.
+                for b in action_barcodes:
+                    messages.warning(request, f'Action barcode {b} cannot be added as an external barcode.')
+                cleaned_external_barcodes = [b for b in external_barcodes if b not in action_barcodes]
+                # Update the form's hidden field so the returned partial no
+                # longer carries the dropped action barcodes.
+                form.data = form.data.copy()
+                form.data['external_barcodes'] = '\n'.join(cleaned_external_barcodes)
+                item = None
+                transaction.set_rollback(True)
+            else:
+                create_new_external_barcodes_for_item(item, external_barcodes)
+
+        if item is not None:
+            messages.success(request, f'Item with barcode {item.barcode_string} created.')
+
+            return HttpResponseClientRedirect(item.get_absolute_url())
+
+    # Form is invalid, or the item was not created — return the form partial
+    # (with any errors) so it can be swapped back into the page.
+    external_barcodes_text = form['external_barcodes'].value() or ''
+    external_barcodes_list = [b.strip() for b in external_barcodes_text.split('\n') if b.strip()]
+    context = {'barcode': barcode, 'form': form, 'external_barcodes': external_barcodes_list}
+
+    return render(request, 'app/new_item.html#new-item-form', context)
 
 
 def new_external_barcode(request):

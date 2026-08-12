@@ -10,12 +10,11 @@ from .models import Item
 class ItemCreateForm(forms.ModelForm):
     """Form for creating new items"""
 
+    # External barcodes are carried as hidden state (pre-filled from the scan
+    # flow) and displayed read-only in the template; they are not editable here.
     external_barcodes = forms.CharField(
         required=False,
-        widget=forms.Textarea(
-            attrs={'rows': 3, 'placeholder': 'Scan external barcodes here, one per line...', 'class': 'form-control'}
-        ),
-        help_text='Enter external barcodes (UPC, serial numbers, etc.), one per line',
+        widget=forms.HiddenInput(),
     )
 
     class Meta:

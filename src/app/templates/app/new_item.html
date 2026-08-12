@@ -3,43 +3,63 @@
 {% load static %}
 {% load navtag %}
 
-{% block title %}Create New Item{% endblock title %}
+{% block title %}
+    Create New Item
+{% endblock title %}
 
 {% block barcode_form %}
 {% endblock barcode_form %}
 
 {% block breadcrumbs %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'app:top' %}">Dashboard</a></li>
-        <li class="breadcrumb-item active">New Item</li>
-    </ol>
-</nav>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'app:top' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">New Item</li>
+        </ol>
+    </nav>
 {% endblock breadcrumbs %}
 
 {% block body %}
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title mb-0">Create New Item</h2>
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title mb-0">Create New Item</h2>
+        </div>
+        <div class="card-body">
+            {% partialdef new-item-form inline %}
+                <div id="new-item-form">
+                    {% if barcode %}
+                        <div class="alert alert-info">
+                            <strong>Scanned Barcode:</strong> <code>{{ barcode }}</code>
+                            <br>
+                            <small>This will be assigned as the item's internal ID.</small>
+                            {% if external_barcodes %}
+                                <br>
+                                <strong>External barcodes to add:</strong>
+                                <ul class="mb-0">
+                                    {% for bc in external_barcodes %}
+                                        <li><code>{{ bc }}</code></li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <form hx-post="{% url 'app:new_item_hxpost' %}?barcode={{ barcode|urlencode }}"
+                          hx-target="#new-item-form"
+                          hx-swap="outerHTML">
+                        {% csrf_token %}
+
+                        {{ form.as_div }}
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'app:top' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Item</button>
+                        </div>
+                    </form>
+                </div>
+            {% endpartialdef new-item-form %}
+        </div>
     </div>
-    <div class="card-body">
-        {% if barcode %}
-            <div class="alert alert-info">
-                <strong>Scanned Barcode:</strong> <code>{{ barcode }}</code>
-                <br><small>This will be assigned as the item's internal ID.</small>
-            </div>
-        {% endif %}
-
-        <form method="post" action="?barcode={{ barcode|urlencode }}">
-            {% csrf_token %}
-
-            {{ form.as_div }}
-
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                <a href="{% url 'app:top' %}" class="btn btn-secondary me-md-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Create Item</button>
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock body %}

@@ -26,6 +26,7 @@ urlpatterns = [
     path(
         'item/<int:pk>/partials/move-container-options/', actions.move_container_options, name='move_container_options'
     ),
-    path('item/new/', views.new_item, name='new_item'),
+    path('item/new/', views.new_item_page, name='new_item'),
+    path('item/new_hxpost/', views.new_item_hxpost, name='new_item_hxpost'),
     path('item/', views.item_list, name='item_list'),
 ]
