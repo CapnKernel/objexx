@@ -50,7 +50,7 @@ def scan_redirect(request):
     if action_match:
         action_name = action_match.group(1).lower()
 
-        item_id = request.GET['item']
+        item_id = request.GET.get('item')
         if item_id:
             try:
                 # Verify the item exists
