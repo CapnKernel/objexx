@@ -60,6 +60,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'conf.middleware.TimezoneMiddleware',
+    'conf.middleware.HtmxMessagesMiddleware',
 ]
 
 ROOT_URLCONF = 'conf.urls'

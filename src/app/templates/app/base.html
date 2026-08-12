@@ -34,17 +34,22 @@
         {% endblock extra_head %}
     </head>
 
-    <body>
-        {% if messages %}
-            <div class="container mt-3">
-                {% for message in messages %}
-                    <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+    <body hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+        <div id="messages-container"
+             hx-get="{% url 'app:messages_partial' %}"
+             hx-trigger="messages-updated from:body"
+             hx-swap="innerHTML">
+            {% partialdef messages-partial inline %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endpartialdef messages-partial %}
+        </div>
 
         <!-- Navigation -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
