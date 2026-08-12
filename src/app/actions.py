@@ -1,12 +1,8 @@
-import re
-from datetime import datetime
-
-from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import path, reverse  # , Resolver404, get_resolver
+from django.urls import reverse
 from django.utils import timezone
 
 from .models import Item
@@ -123,9 +119,13 @@ def delete(request, pk):
 
 @action
 def audit(request, pk):
-    """A placeholder view for auditing items."""
-    # FIXME
-    return HttpResponse(f'Audit action executed for item {pk}')
+    """Entry point for the audit action barcode (V=AUDIT).
+
+    The audit workflow lives in :mod:`app.audit` as one view per page/partial.
+    This stub keeps the generic ``item_action`` dispatch working for the
+    ``V=AUDIT`` barcode by redirecting to the dedicated audit page.
+    """
+    return redirect('app:audit_page', pk=pk)
 
 
 @action

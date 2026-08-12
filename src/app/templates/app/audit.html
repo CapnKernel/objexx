@@ -1,0 +1,622 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% load navtag %}
+{% load app_filters %}
+
+{% block title %}
+    Audit: {{ item.name }} - Inventory
+{% endblock title %}
+
+{% block nav %}
+    {% nav "items" %}
+    {{ block.super }}
+{% endblock nav %}
+
+{% block barcode_form %}
+{% endblock barcode_form %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'app:top' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'app:item_list' %}">Items</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'app:item_detail' pk=item.pk %}">{{ item.name }}</a>
+            </li>
+            <li class="breadcrumb-item active">Audit</li>
+        </ol>
+    </nav>
+{% endblock breadcrumbs %}
+
+{% block body %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="card-title mb-0">Audit: {{ item.name }}</h2>
+            <code>{{ item.barcode_string }}</code>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Location: {{ item.path }}</p>
+
+            <!-- The audit-list fragment is fetched on load via hx-get. -->
+            <div id="audit-content"
+                 hx-get="{% url 'app:audit_list_hx' pk=item.pk %}"
+                 hx-trigger="load"
+                 hx-swap="outerHTML">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            {% partialdef audit-list %}
+            <div id="audit-content"
+                 hx-vals='{"scanned_ids": "{{ scanned_items|join_model_ids:"," }}", "unresolved": "{{ unresolved|join:"," }}"}'>
+                {% if children %}
+                    {% with scanned_count=scanned_items|length total_count=children|length %}
+                        <!-- Progress -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Progress</span>
+                                <span>{{ scanned_count }} / {{ total_count }} scanned</span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                                     role="progressbar"
+                                     style="width: {% widthratio scanned_count total_count 100 %}%"
+                                     aria-valuenow="{{ scanned_count }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="{{ total_count }}">
+                                    {% widthratio scanned_count total_count 100 %}%
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if scanned_count == total_count %}
+                            <div class="alert alert-success">
+                                <h5 class="alert-heading">All items accounted for!</h5>
+                                <p class="mb-0">Every item in this container has been scanned.</p>
+                            </div>
+                        {% endif %}
+
+                        <h5>Scan barcode of an item that's present.</h5>
+                        <!-- Barcode scanner form -->
+                        <form method="post"
+                              action="{% url 'app:audit_list_hxpost' pk=item.pk %}"
+                              hx-post="{% url 'app:audit_list_hxpost' pk=item.pk %}"
+                              hx-target="#audit-content"
+                              hx-swap="outerHTML"
+                              hx-on::after-swap="document.getElementById('barcode').focus()"
+                              class="mb-4">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="barcode" class="form-label">Barcode:</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="barcode"
+                                       name="barcode"
+                                       placeholder="Scan barcode..."
+                                       aria-label="Scan barcode"
+                                       autofocus>
+                                <div class="form-text">Scan each item's barcode to mark it as present.</div>
+                            </div>
+                        </form>
+
+                        <!-- Unscanned items -->
+                        {% if unscanned %}
+                            <div class="mb-4">
+                                <h5>Unscanned Items ({{ unscanned|length }})</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Barcode</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for child in unscanned %}
+                                                <tr>
+                                                    <td>
+                                                        <a href="{% url 'app:item_detail' pk=child.id %}">{{ child.name }}</a>
+                                                    </td>
+                                                    <td>
+                                                        <code>{{ child.barcode_string }}</code>
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-primary"
+                                                                hx-post="{% url 'app:audit_list_hxpost' pk=item.pk %}"
+                                                                hx-target="#audit-content"
+                                                                hx-swap="outerHTML"
+                                                                hx-vals='{"barcode": "{{ child.barcode_string }}"}'>
+                                                            Present
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Scanned items (collapsible) — shown even when all items scanned -->
+                        {% if scanned_items %}
+                            <div class="mb-4 mt-3">
+                                <h5>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#scannedList">
+                                        Scanned Items ({{ scanned_items|length }})
+                                    </button>
+                                </h5>
+                                <div class="collapse" id="scannedList">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Barcode</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for child in children %}
+                                                    {% if child in scanned_items %}
+                                                        <tr>
+                                                            <td>
+                                                                <a href="{% url 'app:item_detail' pk=child.id %}">{{ child.name }}</a>
+                                                            </td>
+                                                            <td>
+                                                                <code>{{ child.barcode_string }}</code>
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-outline-warning"
+                                                                        hx-post="{% url 'app:audit_list_hxpost' pk=item.pk %}"
+                                                                        hx-target="#audit-content"
+                                                                        hx-swap="outerHTML"
+                                                                        hx-vals='{"unscan": "{{ child.id }}"}'>
+                                                                    Not present
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Set-aside items (collapsible) -->
+                        {% if set_aside_items %}
+                            <div class="mb-4">
+                                <h5>
+                                    <button class="btn btn-sm btn-outline-info"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#setAsideList">
+                                        Set Aside ({{ set_aside_items|length }})
+                                    </button>
+                                </h5>
+                                <div class="collapse" id="setAsideList">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Barcode</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for entry in set_aside_items %}
+                                                    {# entry.0 = Item, entry.1 = message #}
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{% url 'app:item_detail' pk=entry.0.id %}">{{ entry.0.name }}</a>
+                                                        </td>
+                                                        <td>
+                                                            <code>{{ entry.0.barcode_string }}</code>
+                                                        </td>
+                                                        <td>{{ entry.1 }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Possible new items (collapsible) -->
+                        {% if possible_barcodes %}
+                            <div class="mb-4">
+                                <h5>
+                                    <button class="btn btn-sm btn-outline-info"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#possibleItemsList">
+                                        Possible New Items ({{ possible_barcodes|length }})
+                                    </button>
+                                </h5>
+                                <div class="collapse" id="possibleItemsList">
+                                    <ul class="list-group">
+                                        {% for entry in possible_barcodes %}
+                                            {# entry.0 = barcode, entry.1 = message #}
+                                            <li class="list-group-item">
+                                                <code>{{ entry.0 }}</code>
+                                                <span class="text-muted">{{ entry.1 }}</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Unknown barcodes (collapsible) -->
+                        {% if unknown_barcodes %}
+                            <div class="mb-4">
+                                <h5>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#unknownBarcodesList">
+                                        Unknown Barcodes ({{ unknown_barcodes|length }})
+                                    </button>
+                                </h5>
+                                <div class="collapse" id="unknownBarcodesList">
+                                    <ul class="list-group">
+                                        {% for entry in unknown_barcodes %}
+                                            {# entry.0 = barcode, entry.1 = message #}
+                                            <li class="list-group-item">
+                                                <code>{{ entry.0 }}</code>
+                                                <span class="text-muted">{{ entry.1 }}</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Review scans button — shown whenever there are unresolved scans,
+                             independent of whether there are unscanned items -->
+                        {% if set_aside_items or possible_barcodes or unknown_barcodes %}
+                            <button type="button"
+                                    class="btn btn-outline-info"
+                                    hx-post="{% url 'app:audit_complete_hxpost' pk=item.pk %}"
+                                    hx-target="#audit-content"
+                                    hx-swap="outerHTML"
+                                    hx-vals='{"review": "1", "scanned_ids": "{{ scanned_items|join_model_ids:"," }}", "unresolved": "{{ unresolved|join:"," }}"}'>
+                                Review scans
+                            </button>
+                        {% endif %}
+
+                        <!-- Declare lost button — only when there are unscanned items -->
+                        {% if unscanned %}
+                            {% with unscanned_length=unscanned|length %}
+
+                                <div class="d-flex gap-2">
+                                    <button type="button"
+                                            class="btn btn-warning"
+                                            hx-get="{% url 'app:audit_confirm_lost_hx' pk=item.pk %}"
+                                            hx-target="#audit-content"
+                                            hx-swap="outerHTML"
+                                            hx-vals='{"show_confirm": "1"}'>
+                                        Declare {{ unscanned_length }} unscanned item{{ unscanned_length|pluralize }} lost
+                                    </button>
+                                    <a href="{% url 'app:item_detail' pk=item.pk %}"
+                                       class="btn btn-outline-secondary">Cancel</a>
+                                </div>
+                            {% endwith %}
+                        {% endif %}
+
+                        <a href="{% url 'app:item_detail' pk=item.pk %}" class="btn btn-primary">Back to Item</a>
+                    {% endwith %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <h4 class="text-muted">This container is empty</h4>
+                        <p class="text-muted">There are no items to audit in this container.</p>
+                        <a href="{% url 'app:item_detail' pk=item.pk %}" class="btn btn-primary">Back to Item</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endpartialdef audit-list %}
+
+        {% partialdef audit-confirm-lost %}
+        <div id="audit-content">
+            <div class="alert alert-warning">
+                <h5 class="alert-heading">Complete Audit</h5>
+                <p>Review the actions below. All changes are applied together when you confirm.</p>
+            </div>
+
+            <form method="post"
+                  action="{% url 'app:audit_confirm_lost_hxpost' pk=item.pk %}"
+                  hx-post="{% url 'app:audit_confirm_lost_hxpost' pk=item.pk %}"
+                  hx-target="#audit-content"
+                  hx-swap="outerHTML">
+                {% csrf_token %}
+                <input type="hidden"
+                       name="scanned_ids"
+                       value="{{ scanned_items|join_model_ids:"," }}">
+                <input type="hidden"
+                       name="unresolved"
+                       value="{{ unresolved|join:"," }}">
+                <input type="hidden"
+                       name="lost_box"
+                       id="lost_box_hidden"
+                       value="{% if lost_boxes %}{{ lost_boxes.0.id }}{% else %}new{% endif %}">
+
+                {% if unscanned %}
+                    {% with unscanned_count=unscanned|length %}
+                        <!-- Unscanned items to be moved (collapsible) -->
+                        <div class="mb-4">
+                            <h5>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#unscannedMoveList">
+                                    Unscanned Items to Move ({{ unscanned_count }})
+                                </button>
+                            </h5>
+                            <div class="collapse" id="unscannedMoveList">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Barcode</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for child in unscanned %}
+                                                <tr>
+                                                    <td>
+                                                        <a href="{% url 'app:item_detail' pk=child.id %}">{{ child.name }}</a>
+                                                    </td>
+                                                    <td>
+                                                        <code>{{ child.barcode_string }}</code>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="lost_box_select" class="form-label">
+                                Move {{ unscanned_count }} unscanned item{{ unscanned_count|pluralize:"s" }} to lost box:
+                            </label>
+                            <select class="form-select"
+                                    id="lost_box_select"
+                                    onchange="document.getElementById('lost_box_hidden').value = this.value;">
+                                {% if lost_boxes %}
+                                    {% for box in lost_boxes %}
+                                        <option value="{{ box.id }}" {% if forloop.first %}selected{% endif %}>{{ box.name }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                                <option value="new">New...</option>
+                            </select>
+                            <div class="form-text">Select an existing lost box or create a new one.</div>
+                        </div>
+                    {% endwith %}
+                {% endif %}
+
+                {% if set_aside_items %}
+                    <div class="form-check mb-3">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="move_set_aside"
+                               id="move_set_aside"
+                               value="true">
+                        <label class="form-check-label" for="move_set_aside">
+                            Move <strong>{{ set_aside_items|length }}</strong> set-aside item(s) into {{ item.name }}
+                        </label>
+                    </div>
+                {% endif %}
+
+                {% if possible_barcodes %}
+                    <div class="mb-4">
+                        <h5>
+                            <button class="btn btn-sm btn-outline-info"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#possibleItemsReviewList">
+                                Possible New Items ({{ possible_barcodes|length }})
+                            </button>
+                        </h5>
+                        <div class="collapse" id="possibleItemsReviewList">
+                            <ul class="list-group">
+                                {% for entry in possible_barcodes %}
+                                    {# entry.0 = barcode, entry.1 = message #}
+                                    <li class="list-group-item">
+                                        <code>{{ entry.0 }}</code>
+                                        <span class="text-muted">{{ entry.1 }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if unknown_barcodes %}
+                    <div class="form-check mb-3">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="create_unknown"
+                               id="create_unknown"
+                               value="true">
+                        <label class="form-check-label" for="create_unknown">
+                            Create <strong>{{ unknown_barcodes|length }}</strong> new item(s) for unknown barcodes
+                        </label>
+                    </div>
+                {% endif %}
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">Confirm</button>
+                    <a href="{% url 'app:item_detail' pk=item.pk %}"
+                       class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    {% endpartialdef audit-confirm-lost %}
+
+    {% partialdef audit-complete %}
+    <div id="audit-content">
+        {% if scanned_items %}
+            <div class="mb-4">
+                <h5>Items Found ({{ scanned_items|length }})</h5>
+                <p class="text-muted">These items were scanned and confirmed present in {{ item.name }}.</p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Barcode</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for found in scanned_items %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'app:item_detail' pk=found.id %}">{{ found.name }}</a>
+                                    </td>
+                                    <td>
+                                        <code>{{ found.barcode_string }}</code>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if unscanned %}
+            <div class="mb-4">
+                <h5>Items moved to Lost ({{ unscanned|length }})</h5>
+                <p class="text-muted">
+                    These items were not scanned, and have been moved to
+                    {% if lost_box %}
+                        <a href="{% url 'app:item_detail' pk=lost_box.id %}">{{ lost_box.name }}</a>.
+                    {% else %}
+                        the lost box.
+                    {% endif %}
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Barcode</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lost in unscanned %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'app:item_detail' pk=lost.id %}">{{ lost.name }}</a>
+                                    </td>
+                                    <td>
+                                        <code>{{ lost.barcode_string }}</code>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if set_aside_items or possible_barcodes or unknown_barcodes %}
+            <div class="mb-4">
+                <h4>Scans to review</h4>
+                <p class="text-muted">
+                    These scans were not confirmed as present in {{ item.name }}. Recheck to see if any
+                    now resolve to an item (for example, one created in another tab).
+                </p>
+
+                {% if set_aside_items %}
+                    <div class="mb-4">
+                        <h5>Set Aside Items ({{ set_aside_items|length }})</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Barcode</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in set_aside_items %}
+                                        {# entry.0 = Item, entry.1 = message #}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'app:item_detail' pk=entry.0.id %}">{{ entry.0.name }}</a>
+                                            </td>
+                                            <td>
+                                                <code>{{ entry.0.barcode_string }}</code>
+                                            </td>
+                                            <td>{{ entry.1 }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if possible_barcodes %}
+                    <div class="mb-4">
+                        <h5>Possible New Items ({{ possible_barcodes|length }})</h5>
+                        <ul class="list-group">
+                            {% for entry in possible_barcodes %}
+                                {# entry.0 = barcode, entry.1 = message #}
+                                <li class="list-group-item">
+                                    <code>{{ entry.0 }}</code>
+                                    <span class="text-muted">{{ entry.1 }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if unknown_barcodes %}
+                    <div class="mb-4">
+                        <h5>Unknown Barcodes ({{ unknown_barcodes|length }})</h5>
+                        <ul class="list-group">
+                            {% for entry in unknown_barcodes %}
+                                {# entry.0 = barcode, entry.1 = message #}
+                                <li class="list-group-item">
+                                    <code>{{ entry.0 }}</code>
+                                    <span class="text-muted">{{ entry.1 }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="d-flex gap-2">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    hx-post="{% url 'app:audit_complete_hxpost' pk=item.pk %}"
+                    hx-target="#audit-content"
+                    hx-swap="outerHTML"
+                    hx-vals='{"recheck": "1", "scanned_ids": "{{ scanned_items|join_model_ids:"," }}", "unresolved": "{{ unresolved|join:"," }}"}'>
+                Recheck
+            </button>
+            <a href="{% url 'app:item_detail' pk=item.pk %}" class="btn btn-primary">Back to Item</a>
+        </div>
+    </div>
+{% endpartialdef audit-complete %}
+</div>
+</div>
+{% endblock body %}
