@@ -224,10 +224,10 @@ try:
 except ImportError:
     print('Unable to load local_settings.py')
 
-TESTING = any(word in sys.argv for word in ('test', 'pytest'))
 PASSWORD_RESET_FROM_EMAIL = EMAIL_DEFAULT_FROM
 
 if DEBUG:
+    TESTING = any(word in sys.argv for word in ('test', 'pytest'))
     if TESTING:
         # EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
         pass
