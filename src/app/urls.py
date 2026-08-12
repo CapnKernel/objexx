@@ -14,7 +14,6 @@ urlpatterns = [
     path('scan/', views.scan_redirect, name='scan_redirect'),
     path('import/', import_items.import_items, name='import_items'),
     path('new_external_barcode/', views.new_external_barcode, name='new_external_barcode'),
-    path('lost/', views.lost_view, name='lost'),
     path(
         'item/<int:pk>/partials/move-container-options/', actions.move_container_options, name='move_container_options'
     ),
