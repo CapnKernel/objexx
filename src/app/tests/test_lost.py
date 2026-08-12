@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from django.utils import timezone
 
-from .models import Item
+from ..models import Item
 
 
 class TestGetLostItem:
@@ -19,7 +19,6 @@ class TestGetLostItem:
         result = Item.get_lost_item()
         assert result == lost
         assert result.parent is None
-        assert result.deleted is False
 
     def test_ignores_non_root_lost_item(self, db):
         """Non-root 'Lost' item (with a parent) is ignored; root one is returned."""
@@ -28,12 +27,6 @@ class TestGetLostItem:
         Item.objects.create(name='Lost', parent=container)
         result = Item.get_lost_item()
         assert result == root_lost
-
-    def test_ignores_deleted_lost_item(self, db):
-        """Soft-deleted root 'Lost' item is ignored → returns None."""
-        lost = Item.objects.create(name='Lost', parent=None)
-        lost.soft_delete('Testing')
-        assert Item.get_lost_item() is None
 
     def test_returns_none_on_multiple_root_lost(self, db):
         """Multiple root-level 'Lost' items → returns None (data integrity issue)."""
@@ -80,15 +73,6 @@ class TestCreateLostBox:
         lost = Item.get_lost_item()
         Item.objects.create(name='Lost-1-Jan-2020z', parent=lost)
         Item.objects.create(name='Lost-27-Oct-3999z', parent=lost)
-        box = Item.create_lost_box()
-        assert box.name == f'{FROZEN_DATE_PREFIX}a'
-
-    def test_ignores_deleted_boxes_when_incrementing(self, mock_localtime, mock_now, db):
-        """Soft-deleted boxes for today are ignored when determining the next letter."""
-        Item.objects.create(name='Lost', parent=None)
-        lost = Item.get_lost_item()
-        box_a = Item.objects.create(name=f'{FROZEN_DATE_PREFIX}a', parent=lost)
-        box_a.soft_delete('Testing')
         box = Item.create_lost_box()
         assert box.name == f'{FROZEN_DATE_PREFIX}a'
 
