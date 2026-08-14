@@ -352,6 +352,23 @@
 
                 {% if unscanned %}
                     {% with unscanned_count=unscanned|length %}
+                        <div class="mb-3">
+                            <label for="lost_box_select" class="form-label">
+                                Move {{ unscanned_count }} unscanned item{{ unscanned_count|pluralize:"s" }} to lost box:
+                            </label>
+                            <select class="form-select"
+                                    id="lost_box_select"
+                                    onchange="document.getElementById('lost_box_hidden').value = this.value;">
+                                {% if lost_boxes %}
+                                    {% for box in lost_boxes %}
+                                        <option value="{{ box.id }}" {% if forloop.first %}selected{% endif %}>{{ box.name }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                                <option value="new">New...</option>
+                            </select>
+                            <div class="form-text">Select an existing lost box or create a new one.</div>
+                        </div>
+
                         <!-- Unscanned items to be moved (collapsible) -->
                         <div class="mb-4">
                             <h5>
@@ -386,23 +403,6 @@
                                     </table>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="lost_box_select" class="form-label">
-                                Move {{ unscanned_count }} unscanned item{{ unscanned_count|pluralize:"s" }} to lost box:
-                            </label>
-                            <select class="form-select"
-                                    id="lost_box_select"
-                                    onchange="document.getElementById('lost_box_hidden').value = this.value;">
-                                {% if lost_boxes %}
-                                    {% for box in lost_boxes %}
-                                        <option value="{{ box.id }}" {% if forloop.first %}selected{% endif %}>{{ box.name }}</option>
-                                    {% endfor %}
-                                {% endif %}
-                                <option value="new">New...</option>
-                            </select>
-                            <div class="form-text">Select an existing lost box or create a new one.</div>
                         </div>
                     {% endwith %}
                 {% endif %}
