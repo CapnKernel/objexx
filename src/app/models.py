@@ -208,6 +208,11 @@ class Item(models.Model):
             self.contents_printed_at = timezone.now()
             self.save()
 
+    def mark_scanned(self):
+        """Record that this item was just scanned"""
+        self.last_scanned_at = timezone.now()
+        self.save()
+
     def get_all_children(self, include_self=False):
         """Get all descendants of this item (for containers)"""
         children = []

@@ -55,15 +55,14 @@ def move(request, pk):
             messages.error(request, f"Destination item with barcode '{destination_barcode}' not found")
             return render(request, 'app/move.html', context)
 
+        destination_item.mark_scanned()
+
         # Check if moving would create a cycle
         if item.is_ancestor_of(destination_item):
             messages.error(request, f'Cannot move item into its own descendant: {destination_item.path}')
             return render(request, 'app/move.html', context)
 
         with transaction.atomic():
-            destination_item.last_scanned_at = timezone.now()
-            destination_item.save()
-
             item.previously_in = item.parent
             item.parent = destination_item
             item.save()

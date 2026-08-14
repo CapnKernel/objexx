@@ -171,8 +171,7 @@ def audit_list_hxpost(request, pk):
         if scanned_item and scanned_item.parent == item:
             if scanned_item not in scanned_items:
                 scanned_items.append(scanned_item)
-            scanned_item.last_scanned_at = timezone.now()
-            scanned_item.save(update_fields=['last_scanned_at'])
+            scanned_item.mark_scanned()
             messages.success(request, f'Scanned: {scanned_item.name}')
         else:
             # Not a present child — record it in the unresolved list.

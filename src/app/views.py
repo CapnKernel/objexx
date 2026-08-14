@@ -1,10 +1,9 @@
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_not_required
 from django.db import transaction
 from django.db.models import Q
 from django.http import Http404, HttpResponseBadRequest
@@ -48,8 +47,7 @@ def scan_redirect(request):
     if item := Item.from_any_barcode(code):
         # If either way we found an item, update last_scanned_at and
         # redirect to its detail page
-        item.last_scanned_at = timezone.now()
-        item.save()
+        item.mark_scanned()
         return redirect(item)
 
     # So we don't have an item.  Check if this is an action barcode (e.g., V=AUDIT)
@@ -250,8 +248,7 @@ def new_external_barcode(request):
             if item:
                 # Existing.  Add any pending external barcodes to it.
                 create_new_external_barcodes_for_item(item, pending)
-                item.last_scanned_at = timezone.now()
-                item.save()
+                item.mark_scanned()
                 return redirect(item)
 
             # Is it a candidate for a new item?
