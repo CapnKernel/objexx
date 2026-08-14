@@ -62,10 +62,7 @@ def move(request, pk):
             messages.error(request, f'Cannot move item into its own descendant: {destination_item.path}')
             return render(request, 'app/move.html', context)
 
-        with transaction.atomic():
-            item.previously_in = item.parent
-            item.parent = destination_item
-            item.save()
+        item.move_to(destination_item)
 
             # FIXME: Create an ItemHistory record for the move.
 

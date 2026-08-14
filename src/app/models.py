@@ -213,6 +213,15 @@ class Item(models.Model):
         self.last_scanned_at = timezone.now()
         self.save()
 
+    def move_to(self, new_parent):
+        """Move this item to a new parent container.
+
+        Records the previous location in ``previously_in`` and saves the change.
+        """
+        self.previously_in = self.parent
+        self.parent = new_parent
+        self.save()
+
     def get_all_children(self, include_self=False):
         """Get all descendants of this item (for containers)"""
         children = []

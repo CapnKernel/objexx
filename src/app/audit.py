@@ -242,9 +242,7 @@ def audit_confirm_lost_hxpost(request, pk):
 
         with transaction.atomic():
             for child in unscanned:
-                child.previously_in = child.parent
-                child.parent = lost_box
-                child.save()
+                child.move_to(lost_box)
 
     # Build completion summary
     parts = []
