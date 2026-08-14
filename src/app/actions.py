@@ -35,10 +35,10 @@ def item_action(request, pk, action):
 @action
 def move(request, pk):
     """Move an item to a different container."""
-    src_item = get_object_or_404(Item, pk=pk)
+    item = get_object_or_404(Item, pk=pk)
 
     context = {
-        'item': src_item,
+        'item': item,
     }
 
     if request.method == 'POST':
@@ -56,7 +56,7 @@ def move(request, pk):
             return render(request, 'app/move.html', context)
 
         # Check if moving would create a cycle
-        if src_item.is_ancestor_of(destination_item):
+        if item.is_ancestor_of(destination_item):
             messages.error(request, f'Cannot move item into its own descendant: {destination_item.path}')
             return render(request, 'app/move.html', context)
 
@@ -64,16 +64,14 @@ def move(request, pk):
             destination_item.last_scanned_at = timezone.now()
             destination_item.save()
 
-            src_item.previously_in = src_item.parent
-            src_item.parent = destination_item
-            src_item.save()
+            item.previously_in = item.parent
+            item.parent = destination_item
+            item.save()
 
             # FIXME: Create an ItemHistory record for the move.
 
-        messages.success(
-            request, f'{src_item.name} moved from {src_item.previously_in.name} to {destination_item.name}.'
-        )
-        return redirect(src_item)
+        messages.success(request, f'{item.name} moved from {item.previously_in.name} to {destination_item.name}.')
+        return redirect(item)
 
     return render(request, 'app/move.html', context)
 
