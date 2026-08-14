@@ -2,7 +2,6 @@ import logging
 import re
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
@@ -355,7 +354,6 @@ class ItemHistory(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='history_entries')
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     description = models.TextField(help_text='Human-readable description of what changed')
-    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     metadata = models.JSONField(default=dict, blank=True, help_text='Additional structured data about the change')
 

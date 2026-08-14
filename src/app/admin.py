@@ -69,7 +69,7 @@ class ExternalBarcodeAdmin(admin.ModelAdmin):
 
 @admin.register(ItemHistory)
 class ItemHistoryAdmin(admin.ModelAdmin):
-    list_display = ['item', 'action', 'user', 'timestamp']
+    list_display = ['item', 'action', 'timestamp']
     list_filter = ['action', 'timestamp']
     search_fields = ['item__name', 'description']
     readonly_fields = ['timestamp']
