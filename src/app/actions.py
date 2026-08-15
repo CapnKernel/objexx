@@ -64,8 +64,6 @@ def move(request, pk):
 
         item.move_to(destination_item)
 
-            # FIXME: Create an ItemHistory record for the move.
-
         messages.success(request, f'{item.name} moved from {item.previously_in.name} to {destination_item.name}.')
         return redirect(item)
 

@@ -312,6 +312,18 @@
                                        class="btn btn-outline-secondary">Cancel</a>
                                 </div>
                             {% endwith %}
+                        {% else %}
+                            <!-- Finish audit button — when all items are scanned -->
+                            <div class="d-flex gap-2 mb-4">
+                                <button type="button"
+                                        class="btn btn-success"
+                                        hx-post="{% url 'app:audit_confirm_lost_hxpost' pk=item.pk %}"
+                                        hx-target="#audit-content"
+                                        hx-swap="outerHTML"
+                                        hx-vals='{"scanned_ids": "{{ scanned_items|join_model_ids:"," }}", "unresolved": "{{ unresolved|join:"," }}"}'>
+                                    Finish audit
+                                </button>
+                            </div>
                         {% endif %}
 
                         <a href="{% url 'app:item_detail' pk=item.pk %}" class="btn btn-primary">Back to Item</a>

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertRedirects
 
-from ..models import ExternalBarcode, Item
+from ..models import ExternalBarcode, Item, ItemHistory
 
 
 class TestAuditPage:
@@ -149,6 +149,29 @@ class TestAuditScanning:
 
         assertContains(response, 'All items accounted for')
         assertContains(response, 'Back to Item')
+        assertContains(response, 'Finish audit')
+
+    def test_finish_audit_logs_history(self, authed_client):
+        """Finishing an audit with all items scanned creates an AUDIT ItemHistory record."""
+        container = Item.objects.create(name='Shelf')
+        child = Item.objects.create(name='Item A', parent=container)
+
+        # Finish the audit via audit_confirm_lost_hxpost with the child scanned
+        response = authed_client.post(
+            reverse('app:audit_confirm_lost_hxpost', kwargs={'pk': container.pk}),
+            {'scanned_ids': str(child.pk)},
+            HTTP_HX_REQUEST='true',
+        )
+
+        assertContains(response, 'Items Found')
+
+        history = ItemHistory.objects.filter(item=container, action='AUDIT')
+        assert history.count() == 1
+        assert history.first().metadata['scanned'] == [child.pk]
+
+        # The child was not moved
+        child.refresh_from_db()
+        assert child.parent == container
 
 
 class TestAuditConfirmLost:

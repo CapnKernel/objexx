@@ -215,11 +215,19 @@ class Item(models.Model):
     def move_to(self, new_parent):
         """Move this item to a new parent container.
 
-        Records the previous location in ``previously_in`` and saves the change.
+        Records the previous location in ``previously_in``, saves the change,
+        and creates an ``ItemHistory`` record for the move.
         """
-        self.previously_in = self.parent
+        self.previously_in = old_parent = self.parent
         self.parent = new_parent
         self.save()
+
+        ItemHistory.objects.create(
+            item=self,
+            action='MOVE',
+            description=f'Moved from {old_parent.name if old_parent else "root"} to {new_parent.name}',
+            metadata={'from': old_parent.id if old_parent else None, 'to': new_parent.id},
+        )
 
     def get_all_children(self, include_self=False):
         """Get all descendants of this item (for containers)"""
@@ -342,13 +350,14 @@ class ItemHistory(models.Model):
     """
 
     ACTION_CHOICES = [
-        ('MOVED', 'Moved'),
-        ('CREATED', 'Created'),
-        ('DELETED', 'Deleted'),
-        ('MERGED', 'Merged'),
+        ('MOVE', 'Move'),
+        ('CREATE', 'Create'),
+        ('DELETE', 'Delete'),
+        ('MERGE', 'Merge'),
         ('SPLIT', 'Split'),
-        ('CLONED', 'Cloned'),
-        ('UPDATED', 'Updated'),
+        ('CLONE', 'Clone'),
+        ('UPDATE', 'Update'),
+        ('AUDIT', 'Audit'),
     ]
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='history_entries')

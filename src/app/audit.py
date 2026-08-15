@@ -31,7 +31,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django_htmx.http import HttpResponseClientRedirect
 
-from .models import Item
+from .models import Item, ItemHistory
 
 
 def _ids_to_items(id_str):
@@ -251,6 +251,17 @@ def audit_confirm_lost_hxpost(request, pk):
     if not parts:
         parts.append('No unscanned items to move')
     summary = '. '.join(parts) + '.'
+
+    # Log the audit itself, even if no items were moved.
+    ItemHistory.objects.create(
+        item=item,
+        action='AUDIT',
+        description=f'Audited {item.name}: {summary}',
+        metadata={
+            'scanned': [c.id for c in scanned_items],
+            'moved': [c.id for c in unscanned],
+        },
+    )
 
     messages.success(request, summary)
 
