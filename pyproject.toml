@@ -1,3 +1,7 @@
+[tool.djlint]
+# Tell djLint about custom template tags, so contents are indented one level.
+custom_blocks = "partialdef"
+
 [tool.ruff]
 line-length = 119
 

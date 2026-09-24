@@ -60,21 +60,21 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     {% block nav %}
-                    {% nav text ' active' %}
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link{{ nav.dash }}" href='{% url "app:top" %}'>Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{{ nav.items }}" href='{% url "app:item_list" %}'>Items</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% block item-admin-link %}{% url 'admin:index' %}{% endblock item-admin-link %}">Admin</a>
-                        </li>
-                    </ul>
+                        {% nav text ' active' %}
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link{{ nav.dash }}" href='{% url "app:top" %}'>Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link{{ nav.items }}" href='{% url "app:item_list" %}'>Items</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% block item-admin-link %}{% url 'admin:index' %}{% endblock item-admin-link %}">Admin</a>
+                            </li>
+                        </ul>
                     {% endblock nav %}
                     {% block barcode_form %}
-                    {# Form? #}
+                        {# Form? #}
                         <form class="d-flex me-3" method="get" action="{% url 'app:scan_redirect' %}">
                             <input class="form-control me-2" type="text" name="barcode" placeholder="Scan barcode..." value="{{ barcode_value }}"
                                 aria-label="Scan barcode" autofocus>
@@ -164,7 +164,7 @@
         </script>
 {% endcomment %}
 
-       {% if css_body_background_colour %}
+        {% if css_body_background_colour %}
             <script>document.body.style.backgroundColor = '{{ css_body_background_colour }}';</script>
         {% endif %}
         {% if css_body_background_image %}
