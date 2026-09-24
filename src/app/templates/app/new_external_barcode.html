@@ -3,59 +3,67 @@
 {% load static %}
 {% load navtag %}
 
-{% block title %}Add external barcode to an item{% endblock title %}
+{% block title %}
+    Add external barcode to an item
+{% endblock title %}
 
 {% block barcode_form %}
 {% endblock barcode_form %}
 
 {% block breadcrumbs %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'app:top' %}">Dashboard</a></li>
-        <li class="breadcrumb-item active">Add external barcode</li>
-    </ol>
-</nav>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'app:top' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">Add external barcode</li>
+        </ol>
+    </nav>
 {% endblock breadcrumbs %}
 
 {% block body %}
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title mb-0">Add external barcode to an Item</h2>
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title mb-0">Add external barcode to an Item</h2>
+        </div>
+        <div class="card-body">
+            {% if pending_barcodes %}
+                <div class="alert alert-info">
+                    <strong>Pending external barcodes:</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for bc in pending_barcodes %}
+                            <li>
+                                barcode: <code>{{ bc }}</code>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> {{ error }}
+                </div>
+            {% endif %}
+
+            {% if lcsc %}
+                <div>
+                    <p>
+                        Possible LCSC part: <a href="https://www.lcsc.com/product-detail/{{ lcsc|urlencode }}.html">link</a>.
+                    </p>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                {{ form.as_div }}
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ back_url }}" class="btn btn-secondary me-md-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="card-body">
-        {% if pending_barcodes %}
-            <div class="alert alert-info">
-                <strong>Pending external barcodes:</strong>
-                <ul class="mb-0 mt-2">
-                    {% for bc in pending_barcodes %}
-                        <li>barcode: <code>{{ bc }}</code></li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        {% if error %}
-            <div class="alert alert-danger">
-                <strong>Error:</strong> {{ error }}
-            </div>
-        {% endif %}
-
-        {% if lcsc %}
-            <div>
-                <p>Possible LCSC part: <a href="https://www.lcsc.com/product-detail/{{ lcsc|urlencode }}.html">link</a>.</p>
-            </div>
-        {% endif %}
-
-        <form method="post">
-            {% csrf_token %}
-
-            {{ form.as_div }}
-
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ back_url }}" class="btn btn-secondary me-md-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock body %}

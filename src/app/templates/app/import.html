@@ -1,26 +1,28 @@
 {% extends "app/base.html" %}
 
-{% block title %}Import Items{% endblock title %}
+{% block title %}
+    Import Items
+{% endblock title %}
 
 {% block breadcrumbs %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'app:top' %}">Dashboard</a></li>
-        <li class="breadcrumb-item active">Import Items</li>
-    </ol>
-</nav>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'app:top' %}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">Import Items</li>
+        </ol>
+    </nav>
 {% endblock breadcrumbs %}
 
 {% block body %}
-<h1>Import Items from CSV</h1>
+    <h1>Import Items from CSV</h1>
 
     {% if errors %}
         <div class="alert alert-danger">
             <h4>Validation Errors:</h4>
             <ul>
-                {% for error in errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
             </ul>
         </div>
     {% endif %}
@@ -56,12 +58,12 @@
                 </thead>
                 <tbody>
                     {% for item in validated_items %}
-                    <tr>
-                        <td>{{ item.id }}</td>
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.description }}</td>
-                        <td>{{ item.parent_id|default:"-" }}</td>
-                    </tr>
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.description }}</td>
+                            <td>{{ item.parent_id|default:"-" }}</td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -72,14 +74,8 @@
             <div class="mb-3">
                 {{ form.csv_data.label_tag }}
                 {{ form.csv_data }}
-                {% if form.csv_data.help_text %}
-                    <div class="form-text">{{ form.csv_data.help_text }}</div>
-                {% endif %}
-                {% if form.csv_data.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.csv_data.errors }}
-                    </div>
-                {% endif %}
+                {% if form.csv_data.help_text %}<div class="form-text">{{ form.csv_data.help_text }}</div>{% endif %}
+                {% if form.csv_data.errors %}<div class="invalid-feedback d-block">{{ form.csv_data.errors }}</div>{% endif %}
             </div>
             <input type="hidden" name="save" value="false">
             <button type="submit" class="btn btn-primary">Check CSV</button>
@@ -87,7 +83,9 @@
 
         <div class="mt-4">
             <h5>CSV Format:</h5>
-            <p>Expected headers: <code>ID, In, Name, Desc</code></p>
+            <p>
+                Expected headers: <code>ID, In, Name, Desc</code>
+            </p>
             <p>Example:</p>
             <pre class="bg-light p-3">
 ID,In,Name,Desc

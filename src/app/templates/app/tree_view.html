@@ -5,12 +5,8 @@
         {% for node in tree.children %}
             <li class="tree-item">
                 <div class="tree-node">
-                    <a href="{% url 'app:item_detail' pk=node.item.id %}" class="tree-link">
-                        {{ node.item.name }}
-                    </a>
-                    {% if node.item.is_container %}
-                        <span class="badge bg-primary ms-2">Container</span>
-                    {% endif %}
+                    <a href="{% url 'app:item_detail' pk=node.item.id %}" class="tree-link">{{ node.item.name }}</a>
+                    {% if node.item.is_container %}<span class="badge bg-primary ms-2">Container</span>{% endif %}
                     (<code>{{ node.item.barcode_string }}</code>)
                 </div>
                 {% if node.children %}
