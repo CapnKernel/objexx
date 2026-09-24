@@ -1,8 +1,6 @@
 from django.urls import reverse
 from pytest_django.asserts import assertContains
 
-from ..models import Item
-
 
 class TestMessagesPartialEndpoint:
     """Tests for the messages_partial HTMX endpoint."""
@@ -18,15 +16,8 @@ class TestMessagesPartialEndpoint:
 
     def test_renders_messages(self, authed_client):
         """GET to messages_partial with messages in storage renders them."""
-        container = Item.objects.create(name='Container A')
-        child = Item.objects.create(name='Item X', parent=container)
-        dest = Item.objects.create(name='Container B')
-
-        # Trigger a move which stores a success message
-        authed_client.post(
-            reverse('app:item_action', kwargs={'pk': child.pk, 'action': 'move'}),
-            {'barcode': dest.barcode_string},
-        )
+        # Trigger an action which stores a success message
+        authed_client.post(reverse('message'), {'message': 'moved from A to B'})
 
         response = authed_client.get(reverse('app:messages_partial'))
 
@@ -36,16 +27,8 @@ class TestMessagesPartialEndpoint:
 
     def test_shows_success_message(self, authed_client):
         """Messages partial renders success-level messages."""
-
-        container = Item.objects.create(name='Container A')
-        child = Item.objects.create(name='Item X', parent=container)
-        dest = Item.objects.create(name='Container B')
-
         # Don't follow redirect — the redirect itself stores the message
-        authed_client.post(
-            reverse('app:item_action', kwargs={'pk': child.pk, 'action': 'move'}),
-            {'barcode': dest.barcode_string},
-        )
+        authed_client.post(reverse('message'), {'message': 'moved from A to B'})
 
         response = authed_client.get(reverse('app:messages_partial'))
 
@@ -55,15 +38,8 @@ class TestMessagesPartialEndpoint:
 
     def test_consumes_messages(self, authed_client):
         """After fetching messages_partial, the storage is cleared."""
-        container = Item.objects.create(name='Container A')
-        child = Item.objects.create(name='Item X', parent=container)
-        dest = Item.objects.create(name='Container B')
-
-        # Trigger a move which stores a success message
-        authed_client.post(
-            reverse('app:item_action', kwargs={'pk': child.pk, 'action': 'move'}),
-            {'barcode': dest.barcode_string},
-        )
+        # Trigger an action which stores a success message
+        authed_client.post(reverse('message'), {'message': 'moved from A to B'})
 
         # First fetch consumes the messages
         authed_client.get(reverse('app:messages_partial'))
@@ -102,15 +78,8 @@ class TestMessagesInBaseTemplate:
 
     def test_renders_messages_directly(self, authed_client):
         """Messages are rendered directly in the base template (non-JS fallback)."""
-        container = Item.objects.create(name='Container A')
-        child = Item.objects.create(name='Item X', parent=container)
-        dest = Item.objects.create(name='Container B')
-
-        # Trigger a move which stores a success message
-        authed_client.post(
-            reverse('app:item_action', kwargs={'pk': child.pk, 'action': 'move'}),
-            {'barcode': dest.barcode_string},
-        )
+        # Trigger an action which stores a success message
+        authed_client.post(reverse('message'), {'message': 'moved from A to B'})
 
         response = authed_client.get(reverse('app:top'))
         assertContains(response, 'alert-success')
