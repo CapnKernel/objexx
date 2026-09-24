@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import TemplateView
 
 from . import actions, audit, import_items, views, wizard
 
@@ -7,7 +8,12 @@ app_name = 'app'
 urlpatterns = [
     path('', views.top, name='top'),
     path('partials/dash-stats/', views.dash_stats, name='dash_stats'),
-    path('partials/messages/', views.messages_partial, name='messages_partial'),
+    # HTMX endpoint returning Django messages as an OOB-swappable partial.
+    path(
+        'partials/messages/',
+        TemplateView.as_view(template_name='app/base.html#messages-partial'),
+        name='messages_partial',
+    ),
     path('scan/', views.scan_redirect, name='scan_redirect'),
     path('import/', import_items.import_items, name='import_items'),
     path('new_external_barcode/', views.new_external_barcode, name='new_external_barcode'),
@@ -34,18 +40,17 @@ urlpatterns = [
     path('item/', views.item_list, name='item_list'),
 ]
 
-""" Wizard endpoints.
-    urlpatterns += [
-        path('item/<int:pk>/wizard_page/', wizard.wizard_page, name='wizard_page'),
-        path('item/<int:pk>/wizard_name_hx/', wizard.wizard_name_hx, name='wizard_name_hx'),
-        path('item/<int:pk>/wizard_name_hxpost/', wizard.wizard_name_hxpost, name='wizard_name_hxpost'),
-        path('item/<int:pk>/wizard_description_hx/', wizard.wizard_description_hx, name='wizard_description_hx'),
-        path(
-            'item/<int:pk>/wizard_description_hxpost/',
-            wizard.wizard_description_hxpost,
-            name='wizard_description_hxpost',
-        ),
-        path('item/<int:pk>/wizard_confirm_hx/', wizard.wizard_confirm_hx, name='wizard_confirm_hx'),
-        path('item/<int:pk>/wizard_confirm_hxpost/', wizard.wizard_confirm_hxpost, name='wizard_confirm_hxpost'),
-    ]
+"""
+    # Wizard endpoints.  Move this up to activate wizard.  See also tests/test_wizard.py
+    path('item/<int:pk>/wizard_page/', wizard.wizard_page, name='wizard_page'),
+    path('item/<int:pk>/wizard_name_hx/', wizard.wizard_name_hx, name='wizard_name_hx'),
+    path('item/<int:pk>/wizard_name_hxpost/', wizard.wizard_name_hxpost, name='wizard_name_hxpost'),
+    path('item/<int:pk>/wizard_description_hx/', wizard.wizard_description_hx, name='wizard_description_hx'),
+    path(
+        'item/<int:pk>/wizard_description_hxpost/',
+        wizard.wizard_description_hxpost,
+        name='wizard_description_hxpost',
+    ),
+    path('item/<int:pk>/wizard_confirm_hx/', wizard.wizard_confirm_hx, name='wizard_confirm_hx'),
+    path('item/<int:pk>/wizard_confirm_hxpost/', wizard.wizard_confirm_hxpost, name='wizard_confirm_hxpost'),
 """

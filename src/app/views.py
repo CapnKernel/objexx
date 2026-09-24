@@ -17,11 +17,6 @@ from .forms import ExternalBarcodeForm, ItemCreateForm
 from .models import ExternalBarcode, Item
 
 
-def messages_partial(request):
-    """HTMX endpoint returning Django messages as an OOB-swappable partial."""
-    return render(request, 'app/base.html#messages-partial')
-
-
 def top(request):
     """Main inventory management dashboard"""
     return render(request, 'app/top.html')

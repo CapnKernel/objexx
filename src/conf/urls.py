@@ -15,12 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+import sys
+
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.decorators import login_not_required
+from django.shortcuts import redirect
 from django.templatetags.static import static
 from django.urls import include, path
 from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 from django.views.static import serve
 
@@ -37,6 +41,21 @@ urlpatterns = [
     # app handles top-level
     path('', include('app.urls')),
 ]
+
+if any('pytest' in arg for arg in sys.argv) or 'pytest' in sys.modules:
+    # Test-only endpoint used to exercise the messages partial.  Only
+    # active during test.   The message text comes from the ``message``
+    # POST/GET parameter (defaulting to a generic success message) and
+    # is rendered by ``app:messages_partial``.
+    class MessageView(TemplateView):
+        def post(self, request, *args, **kwargs):
+            text = request.POST.get('message') or request.GET.get('message') or 'Action completed.'
+            messages.success(request, text)
+            return redirect('app:top')
+
+    urlpatterns += [
+        path('post_test_message/', MessageView.as_view(), name='message'),
+    ]
 
 if settings.DEBUG:
     urlpatterns += [

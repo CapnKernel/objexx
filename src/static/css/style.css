@@ -3,6 +3,42 @@
     display: none !important;
 }
 
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Toast container z-index */
+.toast-z-index {
+    z-index: 11;
+}
+
+/* Breadcrumb chevron separator */
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "\00BB";
+}
+
+/* Navbar text contrast on dark background */
+.navbar-dark .navbar-nav .nav-link,
+.navbar-dark .navbar-text {
+    color: rgba(255, 255, 255, 0.85);
+}
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+    color: #ffffff;
+}
+.navbar-dark .navbar-nav .nav-link.active {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-nav .nav-item {
+        margin-bottom: 0.5rem;
+    }
+}
+
 /* Custom styles for inventory management */
 .inventory-card {
     transition: transform 0.2s ease-in-out;
@@ -18,11 +54,6 @@
     padding: 20px;
 }
 
-.navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
-}
-
 /* Container icon alignment for move form */
 /* Not working very well yet */
 .container-icon {
@@ -32,11 +63,6 @@
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
-}
-
-/* Toast container z-index */
-.toast-z-index {
-    z-index: 11;
 }
 
 /* Tree view styles for item containment hierarchy */
@@ -91,30 +117,4 @@
 
 .tree .tree {
     margin-top: 0.5rem;
-}
-
-/* Breadcrumb chevron separator */
-.breadcrumb-item + .breadcrumb-item::before {
-    content: "\00BB";
-}
-
-/* Navbar text contrast on dark background */
-.navbar-dark .navbar-nav .nav-link,
-.navbar-dark .navbar-text {
-    color: rgba(255, 255, 255, 0.85);
-}
-.navbar-dark .navbar-nav .nav-link:hover,
-.navbar-dark .navbar-nav .nav-link:focus {
-    color: #ffffff;
-}
-.navbar-dark .navbar-nav .nav-link.active {
-    color: #ffffff;
-    font-weight: 600;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .navbar-nav .nav-item {
-        margin-bottom: 0.5rem;
-    }
 }

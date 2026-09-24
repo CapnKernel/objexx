@@ -2,11 +2,13 @@ import pytest
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertRedirects
 
-from ..models import Item, ItemHistory
 
 # The wizard URLs are currently commented out in ``app/urls.py``, so these
 # tests are skipped until the endpoints are re-enabled.
-pytestmark = pytest.mark.skip(reason='Wizard endpoints are disabled in app/urls.py')
+# pytestmark = pytest.mark.skip(reason='Wizard endpoints are disabled in app/urls.py')
+
+
+from ..models import Item, ItemHistory
 
 
 class TestWizardPage:

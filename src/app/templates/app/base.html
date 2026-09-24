@@ -7,7 +7,8 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="Inventory Management System with Barcode Support" />
+        <meta name="description"
+              content="Inventory Management System with Barcode Support" />
         <meta name="keywords" content="inventory,barcode,management" />
         <title>
             {% block title %}
@@ -28,7 +29,8 @@
         {% htmx_script %}
 
         <!-- Alpine.js -->
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script defer
+                src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
         {% block extra_head %}
         {% endblock extra_head %}
@@ -42,9 +44,13 @@
             {% partialdef messages-partial inline %}
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        <div class="alert {{ message.tags }} alert-dismissible fade show"
+                             role="alert">
                             {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -55,7 +61,10 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
                 <a class="navbar-brand" href="{% url 'app:top' %}">Inventory Manager</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
@@ -69,18 +78,24 @@
                                 <a class="nav-link{{ nav.items }}" href='{% url "app:item_list" %}'>Items</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% block item-admin-link %}{% url 'admin:index' %}{% endblock item-admin-link %}">Admin</a>
+                                <a class="nav-link"
+                                   href="{% block item-admin-link %}{% url 'admin:index' %}{% endblock item-admin-link %}">Admin</a>
                             </li>
                         </ul>
                     {% endblock nav %}
                     {% block barcode_form %}
                         {# Form? #}
-                        <form class="d-flex me-3" method="get" action="{% url 'app:scan_redirect' %}">
-                            <input class="form-control me-2" type="text" name="barcode" placeholder="Scan barcode..." value="{{ barcode_value }}"
-                                aria-label="Scan barcode" autofocus>
-                            {% if item %}
-                                <input type="hidden" name="item" value="{{ item.pk }}">
-                            {% endif %}
+                        <form class="d-flex me-3"
+                              method="get"
+                              action="{% url 'app:scan_redirect' %}">
+                            <input class="form-control me-2"
+                                   type="text"
+                                   name="barcode"
+                                   placeholder="Scan barcode..."
+                                   value="{{ barcode_value }}"
+                                   aria-label="Scan barcode"
+                                   autofocus>
+                            {% if item %}<input type="hidden" name="item" value="{{ item.pk }}">{% endif %}
                         </form>
                     {% endblock barcode_form %}
                     <ul class="navbar-nav">
@@ -119,9 +134,10 @@
                 integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
                 crossorigin="anonymous"></script>
 
-{% comment %}
+        {# djlint:off #}{% comment %}{# djlint:on #}
         <!-- Toast container -->
-        <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3 toast-z-index"></div>
+        <div id="toastContainer"
+             class="toast-container position-fixed top-0 end-0 p-3 toast-z-index"></div>
 
         <script>
             // Toast functionality
@@ -162,7 +178,7 @@
                 }
             });
         </script>
-{% endcomment %}
+        {% endcomment %}
 
         {% if css_body_background_colour %}
             <script>document.body.style.backgroundColor = '{{ css_body_background_colour }}';</script>

@@ -1,13 +1,14 @@
 """Views for a multi-page "wizard-style" workflow.
 
-This demonstrates the same htmx pattern used by the move and audit functions,
-but for a linear, multi-step wizard.  Each step is its own URL/view and returns
-an HTML fragment that is swapped into a single ``#wizard-content`` container.
+Each step is its own URL/view and returns an HTML fragment that is swapped into 
+a single ``#wizard-content`` container.
 
 State is carried between steps in the HTTP request/response: every step renders
 hidden ``<input>`` fields holding the accumulated wizard state, and the next
 step's POST reads them back.  Nothing is stored server-side (no session), so the
 wizard is fully stateless and each request is self-contained.
+
+Example data is for "items", but should be modified as needed
 
 The example workflow is a three-step "relabel" wizard for an item:
 
